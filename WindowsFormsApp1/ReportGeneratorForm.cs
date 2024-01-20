@@ -6,6 +6,7 @@ using Microsoft.Office.Core;
 using Microsoft.Office.Interop.Word;
 using Application = Microsoft.Office.Interop.Word.Application;
 using System.Linq;
+using WindowsFormsApp1.Models;
 
 namespace WindowsFormsApp1
 {
@@ -81,9 +82,13 @@ namespace WindowsFormsApp1
 
                     // Create a new document
                     Document doc = string.IsNullOrWhiteSpace(templatePath) ? wordApp.Documents.Add() : wordApp.Documents.Open(templatePath);
+                    AddTreesTable(doc);
 
-                    // Iterate through all sorted image files in the directory
-                    foreach (string imagePath in imagePaths)
+
+                // write trees into word doc
+
+                // Iterate through all sorted image files in the directory
+                foreach (string imagePath in imagePaths)
                     {
                         // Get the image name without extension
                         string imageName = Path.GetFileNameWithoutExtension(imagePath);
@@ -131,6 +136,37 @@ namespace WindowsFormsApp1
             }
         }
 
+        private void AddTreesTable(Document doc)
+        {
+
+            string excelFile = @"C:\Users\adklinge\source\repos\GenerateReport\GenerateReport\ExcelTemplate.xlsx";
+            var trees = ExcelReader.ReadExcelFile(excelFile);
+
+            Table table = doc.Tables.Add(doc.Range(), trees.Count + 1, 3); // 1 row, 3 columns
+
+            // Make the table borders visible
+            table.Borders.Enable = 1;  // 1 (true) enables borders
+            
+            // Add header row
+            table.Cell(1, 1).Range.Text = "מספר סידורי";
+            table.Cell(1, 2).Range.Text = "מין העץ";
+            table.Cell(1, 3).Range.Text = "כמות העצים";
+
+
+            for (int i = 0; i < trees.Count; i++)
+            {
+                AddTreeToTable(table, rowNumber: i + 2, trees[i]);
+            }
+        }
+
+        static void AddTreeToTable(Table table, int rowNumber,Tree tree)
+        {
+            table.Rows.Add();
+            table.Cell(rowNumber, 1).Range.Text = tree.Index.ToString();
+            table.Cell(rowNumber, 2).Range.Text = tree.Species;
+            table.Cell(rowNumber, 3).Range.Text = tree.Quatity.ToString();
+        }
+    
         private string[] ValidateAndExtractImageFiles(string directoryPath)
         {
             // Get all image files in the directory and sort them by name

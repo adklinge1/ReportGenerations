@@ -10,7 +10,7 @@ namespace WindowsFormsApp1.Models
     {
         public Tree(
             int index,
-            int species,
+            string species,
             double height,
             double stemDiameter,
             int healthRate,
@@ -34,11 +34,13 @@ namespace WindowsFormsApp1.Models
             Clonability = SumOfValues <= 12 || HealthRate <= 2 ? "Low" : "High";
         }
 
+        // TODO: add trserifi
+
         public int Index { get; }
 
         public int Quatity => 1;
 
-        public int Species { get; set; }
+        public string Species { get; set; }
 
         public double Height { get; set; }
 
