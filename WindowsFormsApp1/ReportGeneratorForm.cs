@@ -82,10 +82,9 @@ namespace WindowsFormsApp1
 
                     // Create a new document
                     Document doc = string.IsNullOrWhiteSpace(templatePath) ? wordApp.Documents.Add() : wordApp.Documents.Open(templatePath);
+                    
+                    // TODO: add tabke after images
                     AddTreesTable(doc);
-
-
-                // write trees into word doc
 
                 // Iterate through all sorted image files in the directory
                 foreach (string imagePath in imagePaths)
