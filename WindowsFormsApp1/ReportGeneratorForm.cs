@@ -34,6 +34,7 @@ namespace WindowsFormsApp1
             string directoryPath = txtDirectoryPath.Text;
             string templatePath = templatePathTextBox.Text;
             string reportName = reportNameTextBox.Text;
+            string excelFilePath = excelFilePahTextBox.Text;
 
             // Save the document inside the provided directoryPath with the name "GeneratedDocument.docx"
             string outputReportPath = Path.Combine(directoryPath, $"{reportName}.docx");
@@ -66,6 +67,13 @@ namespace WindowsFormsApp1
                 templatePath = null;
             }
 
+            // Check if excel file exists
+            if (!File.Exists(excelFilePath))
+            {
+                MessageBox.Show(@"There is no such excel file", "Excel file doesn't already exists", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                return;
+            }
+
             try
             {
                 // Get all image files in the directory and sort them by name
@@ -84,7 +92,7 @@ namespace WindowsFormsApp1
                 Document doc = string.IsNullOrWhiteSpace(templatePath) ? wordApp.Documents.Add() : wordApp.Documents.Open(templatePath);
 
                 // TODO: add table after images
-                AddTreesTable(doc);
+                AddTreesTable(doc, excelFilePath);
 
                 // Insert an empty paragraph for spacing
                 Paragraph spacingParagraph = doc.Paragraphs.Add();
@@ -144,12 +152,12 @@ namespace WindowsFormsApp1
             }
         }
 
-        private void AddTreesTable(Document doc)
+        private void AddTreesTable(Document doc, string excelFile)
         {
-            string excelFile = @"C:\Users\adklinge\source\repos\GenerateReport\GenerateReport\ExcelTemplate.xlsx";
-            var trees = ExcelReader.ReadExcelFile(excelFile);
+            List<Tree> trees = ExcelReader.ReadExcelFile(excelFile);
+            folderPathTxtLabel.Text = $@"Read: {trees?.Count ?? 0} trees from excel file";
 
-            var tableColumns = new List<string>()
+            var tableColumns = new List<string>(15)
             {
                 "מספר סידורי",
                 "מין העץ ",
@@ -160,7 +168,7 @@ namespace WindowsFormsApp1
                 "(מיקום העץ (0-5",
                 "(ערך מין העץ (0-5",
                 "(חופת העץ (0-5",
-                "סך ערכיות העץ (0-20",
+                "(סך ערכיות העץ (0-20",
                 "שווי העץ (₪)",
                 "(אזור שורשים מוגן (רדיוס במטרים",
                 "היתכנות העתקה ",
@@ -255,6 +263,16 @@ namespace WindowsFormsApp1
 
         private void label1_Click(object sender, EventArgs e)
         {
+        }
+
+        private void reportNameLabel_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label1_Click_1(object sender, EventArgs e)
+        {
+
         }
     }
 }

@@ -31,7 +31,7 @@ namespace WindowsFormsApp1.Models
             PriceInNis = TreePrice;
             SumOfValues = HealthRate + LocationRate + SpeciesRate;
             RootsAreaRadiusInMeters = (stemDiameter * 12) / 100;
-            Clonability = SumOfValues <= 12 || HealthRate <= 2 ? "Low" : "High";
+            Clonability = SumOfValues <= 12 || HealthRate <= 2 ? "נמוכה" : "גבוהה";
         }
 
         // TODO: add trserifi

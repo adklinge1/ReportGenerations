@@ -9,7 +9,7 @@ namespace WindowsFormsApp1
 {
     public static class ExcelReader
     {
-        public static List<Tree> ReadExcelFile(string fileName, string startCol = "A", string endCol = "I")
+        public static List<Tree> ReadExcelFile(string fileName)
         {
             using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(fileName, false))
             {
