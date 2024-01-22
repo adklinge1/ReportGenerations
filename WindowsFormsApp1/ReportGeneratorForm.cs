@@ -82,12 +82,16 @@ namespace WindowsFormsApp1
 
                 // Create a new document
                 Document doc = string.IsNullOrWhiteSpace(templatePath) ? wordApp.Documents.Add() : wordApp.Documents.Open(templatePath);
-                
-                ExtractAllImagesIntoDoc(imagePaths, doc);
 
                 // TODO: add table after images
                 AddTreesTable(doc);
 
+                // Insert an empty paragraph for spacing
+                Paragraph spacingParagraph = doc.Paragraphs.Add();
+                spacingParagraph.Range.InsertParagraphBefore();
+
+                ExtractAllImagesIntoDoc(imagePaths, doc);
+                
                 doc.SaveAs2(outputReportPath);
 
                 // Close Word application
@@ -166,10 +170,11 @@ namespace WindowsFormsApp1
 
             tableColumns.Reverse();
              
-            Table table = doc.Tables.Add(doc.Range(), NumRows: trees.Count + 1, NumColumns: tableColumns.Count); // 1 row, 3 columns
+            Table table = doc.Tables.Add(doc.Range(), NumRows: trees.Count + 1, NumColumns: tableColumns.Count);
 
             // Make the table borders visible
             table.Borders.Enable = 1;
+            table.Range.Font.Size = 8;
 
             // Add header row
             for (int i = 1; i <= tableColumns.Count; i++)
@@ -184,11 +189,11 @@ namespace WindowsFormsApp1
             // Add data rows
             for (int i = 0; i < trees.Count; i++)
             {
-                AddTreeToTable(table, rowNumber: i, trees[i]);
+                AddTreeToTable(table, trees[i]);
             }
         }
 
-        static void AddTreeToTable(Table table, int rowNumber,Tree tree)
+        static void AddTreeToTable(Table table, Tree tree)
         {
             Row newRow = table.Rows.Add();
 
