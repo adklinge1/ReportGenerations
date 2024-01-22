@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 using Path = System.IO.Path;
@@ -67,67 +68,39 @@ namespace WindowsFormsApp1
 
             try
             {
-                    // Get all image files in the directory and sort them by name
-                    string[] imagePaths = ValidateAndExtractImageFiles(directoryPath);
+                // Get all image files in the directory and sort them by name
+                string[] imagePaths = ValidateAndExtractImageFiles(directoryPath);
 
-                    if (imagePaths.Length == 0)
-                    {
-                        return;
-                    }
+                if (imagePaths.Length == 0)
+                {
+                    return;
+                }
 
-                    folderPathTxtLabel.Text = $@"Found: {imagePaths.Length} images to load to report";
+                folderPathTxtLabel.Text = $@"Found: {imagePaths.Length} images to load to report";
+                // Create a new Word application
+                Application wordApp = new Application();
 
-                    // Create a new Word application
-                    Application wordApp = new Application();
+                // Create a new document
+                Document doc = string.IsNullOrWhiteSpace(templatePath) ? wordApp.Documents.Add() : wordApp.Documents.Open(templatePath);
+                
+                ExtractAllImagesIntoDoc(imagePaths, doc);
 
-                    // Create a new document
-                    Document doc = string.IsNullOrWhiteSpace(templatePath) ? wordApp.Documents.Add() : wordApp.Documents.Open(templatePath);
-                    
-                    // TODO: add tabke after images
-                    AddTreesTable(doc);
+                // TODO: add table after images
+                AddTreesTable(doc);
 
-                // Iterate through all sorted image files in the directory
-                foreach (string imagePath in imagePaths)
-                    {
-                        // Get the image name without extension
-                        string imageName = Path.GetFileNameWithoutExtension(imagePath);
+                doc.SaveAs2(outputReportPath);
 
-                        // Add content to the Word document
-                        Paragraph imageNameParagraph = doc.Paragraphs.Add();
-                        Range imageNameRange = imageNameParagraph.Range;
-                        imageNameRange.Text = imageName;  // Set the image name
+                // Close Word application
+                wordApp.Quit();
 
-                        // Add content to the Word document
-                        Paragraph paragraph = doc.Paragraphs.Add();
-                        Range range = paragraph.Range;
+                // Release COM objects to avoid memory leaks
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(doc);
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(wordApp);
 
-                        // Load the image file and add it to the Word document
-                        InlineShape inlineShape = doc.InlineShapes.AddPicture(imagePath, Range: range);
-                    
-                        // Optionally, adjust the size of the image
-                        inlineShape.LockAspectRatio = MsoTriState.msoFalse;
-                        inlineShape.Width = 300;  // Set the width as needed
-                        inlineShape.Height = 200; // Set the height as needed
+                // Display the output document
+                System.Diagnostics.Process.Start(outputReportPath);
 
-                        // Release COM objects to avoid memory leaks
-                        System.Runtime.InteropServices.Marshal.ReleaseComObject(inlineShape);
-                        System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
-                        System.Runtime.InteropServices.Marshal.ReleaseComObject(paragraph);
-                    }
-
-                    doc.SaveAs2(outputReportPath);
-
-                    // Close Word application
-                    wordApp.Quit();
-
-                    // Release COM objects to avoid memory leaks
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(doc);
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(wordApp);
-
-                    // Display the output document
-                    System.Diagnostics.Process.Start(outputReportPath);
-
-                    MessageBox.Show($@"Report was successfully created in :{outputReportPath}", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show($@"Report was successfully created in :{outputReportPath}", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
@@ -135,23 +108,76 @@ namespace WindowsFormsApp1
             }
         }
 
+        private static void ExtractAllImagesIntoDoc(string[] imagePaths, Document doc)
+        {
+            // Iterate through all sorted image files in the directory
+            foreach (string imagePath in imagePaths)
+            {
+                // Get the image name without extension
+                string imageName = Path.GetFileNameWithoutExtension(imagePath);
+
+                // Add content to the Word document
+                Paragraph imageNameParagraph = doc.Paragraphs.Add();
+                Range imageNameRange = imageNameParagraph.Range;
+                imageNameRange.Text = imageName; // Set the image name
+
+                // Add content to the Word document
+                Paragraph paragraph = doc.Paragraphs.Add();
+                Range range = paragraph.Range;
+
+                // Load the image file and add it to the Word document
+                InlineShape inlineShape = doc.InlineShapes.AddPicture(imagePath, Range: range);
+
+                // Optionally, adjust the size of the image
+                inlineShape.LockAspectRatio = MsoTriState.msoFalse;
+                inlineShape.Width = 300; // Set the width as needed
+                inlineShape.Height = 200; // Set the height as needed
+
+                // Release COM objects to avoid memory leaks
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(inlineShape);
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(paragraph);
+            }
+        }
+
         private void AddTreesTable(Document doc)
         {
-
             string excelFile = @"C:\Users\adklinge\source\repos\GenerateReport\GenerateReport\ExcelTemplate.xlsx";
             var trees = ExcelReader.ReadExcelFile(excelFile);
 
-            Table table = doc.Tables.Add(doc.Range(), trees.Count + 1, 3); // 1 row, 3 columns
+            var tableColumns = new List<string>()
+            {
+                "מספר סידורי",
+                "מין העץ ",
+                "כמות עצים",
+                "גובה העץ",
+                "קוטר גזע",
+                "(מצב בריאות (0-5",
+                "(מיקום העץ (0-5",
+                "(ערך מין העץ (0-5",
+                "(חופת העץ (0-5",
+                "סך ערכיות העץ (0-20",
+                "שווי העץ (₪)",
+                "(אזור שורשים מוגן (רדיוס במטרים",
+                "היתכנות העתקה ",
+                "הערות",
+                "סטטוס מוצע"
+            };
+
+            tableColumns.Reverse();
+             
+            Table table = doc.Tables.Add(doc.Range(), NumRows: trees.Count + 1, NumColumns: tableColumns.Count); // 1 row, 3 columns
 
             // Make the table borders visible
-            table.Borders.Enable = 1;  // 1 (true) enables borders
-            
+            table.Borders.Enable = 1;
+
             // Add header row
-            table.Cell(1, 1).Range.Text = "מספר סידורי";
-            table.Cell(1, 2).Range.Text = "מין העץ";
-            table.Cell(1, 3).Range.Text = "כמות העצים";
+            for (int i = 1; i <= tableColumns.Count; i++)
+            {
+                table.Cell(Row: 1, Column: i).Range.Text = tableColumns[i-1];
+            }
 
-
+            // Add data rows
             for (int i = 0; i < trees.Count; i++)
             {
                 AddTreeToTable(table, rowNumber: i + 2, trees[i]);
@@ -163,7 +189,10 @@ namespace WindowsFormsApp1
             table.Rows.Add();
             table.Cell(rowNumber, 1).Range.Text = tree.Index.ToString();
             table.Cell(rowNumber, 2).Range.Text = tree.Species;
-            table.Cell(rowNumber, 3).Range.Text = tree.Quatity.ToString();
+            table.Cell(rowNumber, 
+                
+                
+                3).Range.Text = tree.Quatity.ToString();
         }
     
         private string[] ValidateAndExtractImageFiles(string directoryPath)
