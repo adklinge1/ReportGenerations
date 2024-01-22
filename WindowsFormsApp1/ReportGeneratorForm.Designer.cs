@@ -40,15 +40,18 @@ namespace WindowsFormsApp1
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
+            this.excelFilePathLabel = new System.Windows.Forms.Label();
+            this.excelFilePahTextBox = new System.Windows.Forms.TextBox();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnGenerateDocument
             // 
             this.btnGenerateDocument.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
-            this.btnGenerateDocument.Location = new System.Drawing.Point(266, 284);
+            this.btnGenerateDocument.Location = new System.Drawing.Point(709, 677);
+            this.btnGenerateDocument.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
             this.btnGenerateDocument.Name = "btnGenerateDocument";
-            this.btnGenerateDocument.Size = new System.Drawing.Size(270, 117);
+            this.btnGenerateDocument.Size = new System.Drawing.Size(720, 279);
             this.btnGenerateDocument.TabIndex = 0;
             this.btnGenerateDocument.Text = "Generate Report";
             this.btnGenerateDocument.UseVisualStyleBackColor = true;
@@ -56,9 +59,10 @@ namespace WindowsFormsApp1
             // 
             // txtDirectoryPath
             // 
-            this.txtDirectoryPath.Location = new System.Drawing.Point(21, 48);
+            this.txtDirectoryPath.Location = new System.Drawing.Point(36, 263);
+            this.txtDirectoryPath.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
             this.txtDirectoryPath.Name = "txtDirectoryPath";
-            this.txtDirectoryPath.Size = new System.Drawing.Size(326, 20);
+            this.txtDirectoryPath.Size = new System.Drawing.Size(863, 38);
             this.txtDirectoryPath.TabIndex = 1;
             this.txtDirectoryPath.Text = "C:\\";
             this.txtDirectoryPath.TextChanged += new System.EventHandler(this.txtDirectoryPath_TextChanged);
@@ -67,71 +71,104 @@ namespace WindowsFormsApp1
             // 
             this.folderPathTxtLabel.AutoSize = true;
             this.folderPathTxtLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
-            this.folderPathTxtLabel.Location = new System.Drawing.Point(18, 18);
+            this.folderPathTxtLabel.Location = new System.Drawing.Point(29, 195);
+            this.folderPathTxtLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
             this.folderPathTxtLabel.Name = "folderPathTxtLabel";
-            this.folderPathTxtLabel.Size = new System.Drawing.Size(283, 17);
+            this.folderPathTxtLabel.Size = new System.Drawing.Size(615, 39);
             this.folderPathTxtLabel.TabIndex = 2;
             this.folderPathTxtLabel.Text = "Insert the path to the folder of images";
             this.folderPathTxtLabel.Click += new System.EventHandler(this.label1_Click);
             // 
             // templatePathTextBox
             // 
-            this.templatePathTextBox.Location = new System.Drawing.Point(21, 181);
+            this.templatePathTextBox.Location = new System.Drawing.Point(55, 568);
+            this.templatePathTextBox.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
             this.templatePathTextBox.Name = "templatePathTextBox";
-            this.templatePathTextBox.Size = new System.Drawing.Size(319, 20);
+            this.templatePathTextBox.Size = new System.Drawing.Size(844, 38);
             this.templatePathTextBox.TabIndex = 3;
             // 
             // templateDocumentLabel
             // 
             this.templateDocumentLabel.AutoSize = true;
             this.templateDocumentLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
-            this.templateDocumentLabel.Location = new System.Drawing.Point(18, 153);
+            this.templateDocumentLabel.Location = new System.Drawing.Point(48, 496);
+            this.templateDocumentLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
             this.templateDocumentLabel.Name = "templateDocumentLabel";
-            this.templateDocumentLabel.Size = new System.Drawing.Size(268, 17);
+            this.templateDocumentLabel.Size = new System.Drawing.Size(591, 39);
             this.templateDocumentLabel.TabIndex = 4;
             this.templateDocumentLabel.Text = "Word Template document (optional)";
             // 
             // reportNameTextBox
             // 
-            this.reportNameTextBox.Location = new System.Drawing.Point(21, 113);
+            this.reportNameTextBox.Location = new System.Drawing.Point(36, 127);
+            this.reportNameTextBox.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
             this.reportNameTextBox.Name = "reportNameTextBox";
-            this.reportNameTextBox.Size = new System.Drawing.Size(164, 20);
+            this.reportNameTextBox.Size = new System.Drawing.Size(431, 38);
             this.reportNameTextBox.TabIndex = 5;
             // 
             // reportNameLabel
             // 
             this.reportNameLabel.AutoSize = true;
-            this.reportNameLabel.Location = new System.Drawing.Point(18, 87);
+            this.reportNameLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
+            this.reportNameLabel.Location = new System.Drawing.Point(29, 57);
+            this.reportNameLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
             this.reportNameLabel.Name = "reportNameLabel";
-            this.reportNameLabel.Size = new System.Drawing.Size(70, 13);
+            this.reportNameLabel.Size = new System.Drawing.Size(230, 39);
             this.reportNameLabel.TabIndex = 6;
             this.reportNameLabel.Text = "Report Name";
-            this.reportNameLabel.Font = new System.Drawing.Font("Boucherie Block", 10F, System.Drawing.FontStyle.Bold);
+            this.reportNameLabel.Click += new System.EventHandler(this.reportNameLabel_Click);
             // 
             // statusStrip1
             // 
+            this.statusStrip1.ImageScalingSize = new System.Drawing.Size(40, 40);
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
             this.toolStripProgressBar1});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 428);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 1043);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(800, 22);
+            this.statusStrip1.Padding = new System.Windows.Forms.Padding(3, 0, 37, 0);
+            this.statusStrip1.Size = new System.Drawing.Size(2133, 30);
             this.statusStrip1.TabIndex = 7;
             this.statusStrip1.Text = "statusStrip1";
             // 
             // toolStripStatusLabel1
             // 
+            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 17);
             // 
             // toolStripProgressBar1
             // 
             this.toolStripProgressBar1.Name = "toolStripProgressBar1";
-            this.toolStripProgressBar1.Size = new System.Drawing.Size(100, 16);
+            this.toolStripProgressBar1.Size = new System.Drawing.Size(267, 14);
+            // 
+            // excel file label1
+            // 
+            this.excelFilePathLabel.AutoSize = true;
+            this.excelFilePathLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
+            this.excelFilePathLabel.Location = new System.Drawing.Point(38, 346);
+            this.excelFilePathLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.excelFilePathLabel.Name = "ExcelFileLabel";
+            this.excelFilePathLabel.Size = new System.Drawing.Size(615, 39);
+            this.excelFilePathLabel.TabIndex = 8;
+            this.excelFilePathLabel.Text = "Insert the path to the excel file";
+            this.excelFilePathLabel.Click += new System.EventHandler(this.label1_Click_1);
+            // 
+            // excel file text box
+            // 
+            this.excelFilePahTextBox.Location = new System.Drawing.Point(36, 412);
+            this.excelFilePahTextBox.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.excelFilePahTextBox.Name = "excelFilePahTextBox";
+            this.excelFilePahTextBox.Size = new System.Drawing.Size(863, 38);
+            this.excelFilePahTextBox.TabIndex = 9;
+            this.excelFilePahTextBox.Text = "C:\\";
             // 
             // ReportGeneratorForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(16F, 31F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(2133, 1073);
+            this.Controls.Add(this.excelFilePahTextBox);
+            this.Controls.Add(this.excelFilePathLabel);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.reportNameLabel);
             this.Controls.Add(this.reportNameTextBox);
@@ -140,6 +177,7 @@ namespace WindowsFormsApp1
             this.Controls.Add(this.folderPathTxtLabel);
             this.Controls.Add(this.txtDirectoryPath);
             this.Controls.Add(this.btnGenerateDocument);
+            this.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
             this.Name = "ReportGeneratorForm";
             this.Text = "Report Generator";
             this.statusStrip1.ResumeLayout(false);
@@ -163,6 +201,8 @@ namespace WindowsFormsApp1
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
+        private System.Windows.Forms.Label excelFilePathLabel;
+        private System.Windows.Forms.TextBox excelFilePahTextBox;
     }
 }
 
