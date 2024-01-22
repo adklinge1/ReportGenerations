@@ -174,25 +174,46 @@ namespace WindowsFormsApp1
             // Add header row
             for (int i = 1; i <= tableColumns.Count; i++)
             {
-                table.Cell(Row: 1, Column: i).Range.Text = tableColumns[i-1];
+                Cell headerCell = table.Cell(Row: 1, Column: i);
+                headerCell.Range.Text = tableColumns[i - 1];
+
+                // Make the text in the header cell bold
+                headerCell.Range.Font.Bold = 1;
             }
 
             // Add data rows
             for (int i = 0; i < trees.Count; i++)
             {
-                AddTreeToTable(table, rowNumber: i + 2, trees[i]);
+                AddTreeToTable(table, rowNumber: i, trees[i]);
             }
         }
 
         static void AddTreeToTable(Table table, int rowNumber,Tree tree)
         {
-            table.Rows.Add();
-            table.Cell(rowNumber, 1).Range.Text = tree.Index.ToString();
-            table.Cell(rowNumber, 2).Range.Text = tree.Species;
-            table.Cell(rowNumber, 
-                
-                
-                3).Range.Text = tree.Quatity.ToString();
+            Row newRow = table.Rows.Add();
+
+            // Set the text for each cell in the row.
+            newRow.Cells[15].Range.Text = tree.Index.ToString();
+            newRow.Cells[14].Range.Text = tree.Species;
+            newRow.Cells[13].Range.Text = tree.Quatity.ToString();
+            newRow.Cells[12].Range.Text = tree.Height.ToString();
+            newRow.Cells[11].Range.Text = tree.StemDiameter.ToString();
+            newRow.Cells[10].Range.Text = tree.HealthRate.ToString();
+            newRow.Cells[9].Range.Text = tree.LocationRate.ToString();
+            newRow.Cells[8].Range.Text = tree.SpeciesRate.ToString();
+            newRow.Cells[7].Range.Text = tree.CanopyRate.ToString();
+            newRow.Cells[6].Range.Text = tree.SumOfValues.ToString();
+            newRow.Cells[5].Range.Text = tree.PriceInNis.ToString();
+            newRow.Cells[4].Range.Text = tree.RootsAreaRadiusInMeters.ToString();
+            newRow.Cells[3].Range.Text = tree.Clonability;
+            newRow.Cells[2].Range.Text = tree.Comments;
+            newRow.Cells[1].Range.Text = tree.Status;
+            
+            // Set the font size for each cell.
+            foreach (Cell cell in newRow.Cells)
+            {
+                cell.Range.Font.Size = 8; // Set the desired font size.
+            }
         }
     
         private string[] ValidateAndExtractImageFiles(string directoryPath)
