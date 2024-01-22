@@ -250,6 +250,29 @@ namespace WindowsFormsApp1
                 MessageBox.Show("No images found in folder. Please select the folder containing the images of the report", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return new string[] { };
             }
+        }
+
+        private string[] ValidateAndExtractImageFiles(string directoryPath)
+        {
+            // Get all image files in the directory and sort them by name
+            string[] imagePaths = Directory.GetFiles(directoryPath, "*.jpg", SearchOption.TopDirectoryOnly)
+                .Concat(Directory.GetFiles(directoryPath, "*.jpeg", SearchOption.TopDirectoryOnly))
+                .Concat(Directory.GetFiles(directoryPath, "*.png", SearchOption.TopDirectoryOnly))
+                .ToArray();
+
+            string[] invalidImageNames = imagePaths?.Where(img => int.TryParse(Path.GetFileNameWithoutExtension(img), out _) == false).ToArray();
+
+            if (invalidImageNames.Any())
+            {
+                MessageBox.Show($"Image file must have a numeric name. Invalid image names : {string.Join(", ", invalidImageNames)}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return new string[] { };
+            }
+
+            if (imagePaths.Length == 0)
+            {
+                MessageBox.Show("No images found in folder. Please select the folder containing the images of the report", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return new string[] { };
+            }
 
             // Order numerically
             return imagePaths.OrderBy(f => int.Parse(Path.GetFileNameWithoutExtension(f))).ToArray();
