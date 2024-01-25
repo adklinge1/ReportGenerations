@@ -30,7 +30,7 @@ namespace WindowsFormsApp1
                 }
 
                 List<Tree> trees = new List<Tree>(numberOfTrees);
-
+                
                 // Read all rows and aocnvert to Trees
                 // TODO: Stop when all cells are empty
                 foreach (Row r in rows.Skip(1))
@@ -58,32 +58,43 @@ namespace WindowsFormsApp1
         int location = -1;
         int speciesValue = -1;
         double price = -1;
+        int numberOfStems = 1;
+        bool isTserifi = false;
+            
         foreach (Cell cell in row.Elements<Cell>())
         {
             string cellValue = GetCellValue(cell, sharedString);
+
+            if (cellValue == string.Empty)
+            {
+                continue;
+            }
+
             var columneName = GetColumnName(cell.CellReference.Value);
 
+            try
+            {
                 switch (columneName)
                 {
                     case "A":
                         index = int.Parse(cellValue);
                         break;
                     case "B":
-                        species= cellValue;
+                        species = cellValue;
                         break;
                     case "C":
-                       height = double.Parse(cellValue);
+                        height = double.Parse(cellValue);
                         break;
                     case "D":
                         diameter = double.Parse(cellValue);
-                        break;  
+                        break;
                     case "E":
                         canopy = double.Parse(cellValue);
                         break;
-                    case "F": 
+                    case "F":
                         health = int.Parse(cellValue);
                         break;
-                    
+
                     case "G":
                         location = int.Parse(cellValue);
                         break;
@@ -95,22 +106,33 @@ namespace WindowsFormsApp1
                     case "I":
                         price = double.Parse(cellValue);
                         break;
+                    case "J":
+                        numberOfStems = !string.IsNullOrWhiteSpace(cellValue) && int.TryParse(cellValue, out int numOfStems) ? numOfStems : 1;
+                        break;
+                    case "K":
+                        isTserifi = !string.IsNullOrWhiteSpace(cellValue) && int.TryParse(cellValue, out int tserifi) && tserifi == 1;
+                        break;
 
                     default:
                         // throw new ArgumentException($"Excel table shoudn't have a cell at column : {columneName}");
                         break;
+                    }
                 }
+            catch (Exception ex)
+            {
+                throw new ArgumentException($"Column :{columneName} in row {row.RowIndex} can not be: {cellValue}\n{ex}");
+            }
         }
 
-        return new Tree(index, species, height, diameter, health, canopy, location, speciesValue, price);
-
+        return new Tree(index, species, height, diameter, health, canopy, location, speciesValue, price, numberOfStems, isTserifi);
     }
 
-    static string GetColumnName(string cellReference)
-    {
-        // Extracts the column name from the cell reference (e.g., "A1" -> "A")
-        return new String(cellReference.Where(Char.IsLetter).ToArray());
-    }
+
+        public static string GetColumnName(string cellReference)
+        {
+            // Extracts the column name from the cell reference (e.g., "A1" -> "A")
+            return new String(cellReference.Where(Char.IsLetter).ToArray());
+        }
 
         private static string GetCellValue(Cell cell, SharedStringTable sharedStringTable)
         {
