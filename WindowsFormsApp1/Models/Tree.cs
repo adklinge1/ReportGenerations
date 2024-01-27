@@ -34,16 +34,14 @@ namespace WindowsFormsApp1.Models
 
             SumOfValues = HealthRate + LocationRate + SpeciesRate + CanopyRate;
 
-            TreeEvaluation = SumOfValues <= 6 ? "נמוכה" :
-                SumOfValues <= 13 ? "בינונית" :
-                SumOfValues <= 16 ? "גבוהה" :
-                "גבוהה מאד";
+            TreeEvaluation = SumOfValues <= 6 ? TreeEvaluations.Low :
+                SumOfValues <= 13 ? TreeEvaluations.Medium :
+                SumOfValues <= 16 ? TreeEvaluations.High :
+                TreeEvaluations.VeryHigh;
 
             RootsAreaRadiusInMeters = (stemDiameter * 12) / 100;
             Clonability = SumOfValues <= 12 || HealthRate <= 2 ? "נמוכה" : "גבוהה";
         }
-
-        // TODO: add trserifi
 
         public int Index { get; }
 
