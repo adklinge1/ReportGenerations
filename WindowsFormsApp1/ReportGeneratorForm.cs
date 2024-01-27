@@ -98,7 +98,7 @@ namespace WindowsFormsApp1
                 Paragraph spacingParagraph = doc.Paragraphs.Add();
                 spacingParagraph.Range.InsertParagraphBefore();
 
-                // ExtractAllImagesIntoDoc(imagePaths, doc);
+                ExtractAllImagesIntoDoc(imagePaths, doc);
                 
                 doc.SaveAs2(outputReportPath);
 
@@ -160,7 +160,59 @@ namespace WindowsFormsApp1
             AddFirstTable(doc, trees);
 
             AddTitleParagraph(doc, "טבלת ערכיות העצים");
+
+            
             AddSecondTable(doc, trees);
+            AddThirdTable(doc, trees);
+        }
+
+        private static void AddThirdTable(Document doc, List<Tree> trees)
+        {
+            var tableColumns = new List<string>(15)
+            {
+                "מספר סידורי",
+                "מין העץ ",
+                "כמות עצים",
+                "גובה העץ",
+                "מספר גזעים",
+                "קוטר גזע",
+                "(סך ערכיות העץ (0-20",
+                "ערכיות העץ",
+                "סטטוס מוצע"
+            };
+
+            Table table = CreateTableWithHeaders(
+                doc,
+                rows: trees.Count + 1,
+                cols: tableColumns.Count,
+                tableColumns,
+                title: "טבלת מידע מרכזת");
+
+            int rowNumber = 2;
+
+            foreach (Tree tree in trees)
+            {
+                Row newRow = table.Rows[rowNumber];
+
+                // Set the text for each cell in the row.
+                newRow.Cells[9].Range.Text = tree.Index.ToString();
+                newRow.Cells[8].Range.Text = tree.Species;
+                newRow.Cells[7].Range.Text = tree.Quatity.ToString();
+                newRow.Cells[6].Range.Text = tree.Height.ToString();
+                newRow.Cells[5].Range.Text = tree.NumberOfStems.ToString();
+                newRow.Cells[4].Range.Text = tree.StemDiameter.ToString();
+                newRow.Cells[3].Range.Text = tree.SumOfValues.ToString();
+                newRow.Cells[2].Range.Text = tree.TreeEvaluation;
+                newRow.Cells[1].Range.Text = tree.Status;
+
+                // Color by evaluation
+                newRow.Cells[2].Range.Shading.BackgroundPatternColor = tree.TreeEvaluation == TreeEvaluations.Low ? WdColor.wdColorYellow :
+                    tree.TreeEvaluation == TreeEvaluations.Medium ? WdColor.wdColorGray30 :
+                    tree.TreeEvaluation == TreeEvaluations.High ? WdColor.wdColorGreen :
+                    WdColor.wdColorRed;
+
+                rowNumber++;
+            }
         }
 
         private static void AddSecondTable(Document doc, List<Tree> trees)
@@ -341,7 +393,7 @@ namespace WindowsFormsApp1
             int sumOfValues = tree.SumOfValues;
             
             newRow.Cells[6].Range.Shading.BackgroundPatternColor = sumOfValues <= 6 ? WdColor.wdColorYellow :
-                sumOfValues <= 13 ? WdColor.wdColorGray10 :
+                sumOfValues <= 13 ? WdColor.wdColorGray30 :
                 sumOfValues <= 16 ? WdColor.wdColorGreen :
                 WdColor.wdColorRed;
 
