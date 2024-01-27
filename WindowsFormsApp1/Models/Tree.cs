@@ -17,7 +17,8 @@ namespace WindowsFormsApp1.Models
             double canopyDiameter,
             int locationRate,
             int speciesRate,
-            double TreePrice,
+            double treePrice,
+            int numberOfStems = 1,
             bool isTreeTserifi = false)
         {
             Index = index;
@@ -28,8 +29,16 @@ namespace WindowsFormsApp1.Models
             CanopyRate = CalculateCanopyRate(canopyDiameter, isTreeTserifi);
             LocationRate = locationRate;
             SpeciesRate = speciesRate;
-            PriceInNis = TreePrice;
-            SumOfValues = HealthRate + LocationRate + SpeciesRate;
+            PriceInNis = treePrice;
+            NumberOfStems = numberOfStems;
+
+            SumOfValues = HealthRate + LocationRate + SpeciesRate + CanopyRate;
+
+            TreeEvaluation = SumOfValues <= 6 ? "נמוכה" :
+                SumOfValues <= 13 ? "בינונית" :
+                SumOfValues <= 16 ? "גבוהה" :
+                "גבוהה מאד";
+
             RootsAreaRadiusInMeters = (stemDiameter * 12) / 100;
             Clonability = SumOfValues <= 12 || HealthRate <= 2 ? "נמוכה" : "גבוהה";
         }
@@ -38,6 +47,8 @@ namespace WindowsFormsApp1.Models
 
         public int Index { get; }
 
+        public string TreeEvaluation { get; }
+
         public int Quatity => 1;
 
         public string Species { get; set; }
@@ -45,6 +56,8 @@ namespace WindowsFormsApp1.Models
         public double Height { get; set; }
 
         public double StemDiameter { get; set; }
+
+        public int NumberOfStems { get; set; }
 
         public int HealthRate { get; set; }
         

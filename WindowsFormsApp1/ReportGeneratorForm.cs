@@ -98,7 +98,7 @@ namespace WindowsFormsApp1
                 Paragraph spacingParagraph = doc.Paragraphs.Add();
                 spacingParagraph.Range.InsertParagraphBefore();
 
-                ExtractAllImagesIntoDoc(imagePaths, doc);
+                // ExtractAllImagesIntoDoc(imagePaths, doc);
                 
                 doc.SaveAs2(outputReportPath);
 
@@ -177,7 +177,7 @@ namespace WindowsFormsApp1
             };
 
             tableColumns.Reverse();
-             
+
             Table table = doc.Tables.Add(doc.Range(), NumRows: trees.Count + 1, NumColumns: tableColumns.Count);
 
             // Make the table borders visible
@@ -197,13 +197,13 @@ namespace WindowsFormsApp1
             // Add data rows
             for (int i = 0; i < trees.Count; i++)
             {
-                AddTreeToTable(table, trees[i]);
+                AddTreeToTable(table, trees[i], rowNumber: i + 2);
             }
         }
 
-        static void AddTreeToTable(Table table, Tree tree)
+        static void AddTreeToTable(Table table, Tree tree, int rowNumber)
         {
-            Row newRow = table.Rows.Add();
+            Row newRow = table.Rows[rowNumber];
 
             // Set the text for each cell in the row.
             newRow.Cells[15].Range.Text = tree.Index.ToString();
@@ -227,29 +227,15 @@ namespace WindowsFormsApp1
             {
                 cell.Range.Font.Size = 8; // Set the desired font size.
             }
-        }
-    
-        private string[] ValidateAndExtractImageFiles(string directoryPath)
-        {
-            // Get all image files in the directory and sort them by name
-            string[] imagePaths = Directory.GetFiles(directoryPath, "*.jpg", SearchOption.TopDirectoryOnly)
-                .Concat(Directory.GetFiles(directoryPath, "*.jpeg", SearchOption.TopDirectoryOnly))
-                .Concat(Directory.GetFiles(directoryPath, "*.png", SearchOption.TopDirectoryOnly))
-                .ToArray();
 
-            string[] invalidImageNames = imagePaths?.Where(img => int.TryParse(Path.GetFileNameWithoutExtension(img), out _) == false).ToArray();
+            // Set color to SumOfValues: 0-6 (yellow), 7-13(gray), 14-16(green), 17-20 (red)
+            int sumOfValues = tree.SumOfValues;
+            
+            newRow.Cells[6].Range.Shading.BackgroundPatternColor = sumOfValues <= 6 ? WdColor.wdColorYellow :
+                sumOfValues <= 13 ? WdColor.wdColorGray10 :
+                sumOfValues <= 16 ? WdColor.wdColorGreen :
+                WdColor.wdColorRed;
 
-            if (invalidImageNames.Any())
-            {
-                MessageBox.Show($"Image file must have a numeric name. Invalid image names : {string.Join(", ", invalidImageNames)}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return new string[]{};
-            }
-
-            if (imagePaths.Length == 0)
-            {
-                MessageBox.Show("No images found in folder. Please select the folder containing the images of the report", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return new string[] { };
-            }
         }
 
         private string[] ValidateAndExtractImageFiles(string directoryPath)
