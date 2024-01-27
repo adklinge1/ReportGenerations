@@ -162,6 +162,32 @@ namespace WindowsFormsApp1
 
         private static void AddSecondTable(Document doc, List<Tree> trees)
         {
+            var tableColumns = new List<string>()
+            {
+                "מין העץ",
+                "שם מדעי",
+                "ערכיות גבוהה מאד",
+                "ערכיות גבוהה",
+                "ערכיות בינונית",
+                "ערכיות נמוכה",
+                "סכהכ"
+            };
+
+            IEnumerable<IGrouping<string, Tree>> groupsBySpecie = trees.GroupBy(t => t.Species);
+
+            int numberOfRows = groupsBySpecie.Count() + 2;
+
+            Table table = CreateTableWithHeaders(doc, rows: numberOfRows, cols: tableColumns.Count, tableColumns);
+
+            int rowNumber = 2;
+            foreach (var specieGroup in groupsBySpecie)
+            {
+                Row newRow = table.Rows[rowNumber];
+
+                // Set the text for each cell in the row.
+                newRow.Cells[7].Range.Text = specieGroup.Key;
+                newRow.Cells[6].Range.Text = "<Unknown>";
+            }
 
         }
 
