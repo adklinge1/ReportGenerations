@@ -158,6 +158,9 @@ namespace WindowsFormsApp1
             folderPathTxtLabel.Text = $@"Reads: {trees?.Count ?? 0} trees from excel file";
 
             AddFirstTable(doc, trees);
+
+            AddTitleParagraph(doc, "טבלת ערכיות העצים");
+            AddSecondTable(doc, trees);
         }
 
         private static void AddSecondTable(Document doc, List<Tree> trees)
@@ -175,9 +178,10 @@ namespace WindowsFormsApp1
 
             IEnumerable<IGrouping<string, Tree>> groupsBySpecie = trees.GroupBy(t => t.Species);
 
-            int numberOfRows = groupsBySpecie.Count() + 2;
+            // Number of rows is number of distinct species + 2 summary rows + header
+            int numberOfRows = groupsBySpecie.Count() + 2 + 1;
 
-            Table table = CreateTableWithHeaders(doc, rows: numberOfRows, cols: tableColumns.Count, tableColumns);
+            Table table = CreateTableWithHeaders(doc, rows: numberOfRows, cols: tableColumns.Count, tableColumns, "טבלת סיכום סיווג");
 
             int rowNumber = 2;
             foreach (var specieGroup in groupsBySpecie)
@@ -186,14 +190,50 @@ namespace WindowsFormsApp1
 
                 // Set the text for each cell in the row.
                 newRow.Cells[7].Range.Text = specieGroup.Key;
-                newRow.Cells[6].Range.Text = "<Unknown>";
+                newRow.Cells[6].Range.Text = "< Unknown >";
+                newRow.Cells[5].Range.Text = specieGroup.Count(t => t.TreeEvaluation == TreeEvaluations.VeryHigh).ToString();
+                newRow.Cells[4].Range.Text = specieGroup.Count(t => t.TreeEvaluation == TreeEvaluations.High).ToString();
+                newRow.Cells[3].Range.Text = specieGroup.Count(t => t.TreeEvaluation == TreeEvaluations.Medium).ToString();
+                newRow.Cells[2].Range.Text = specieGroup.Count(t => t.TreeEvaluation == TreeEvaluations.Low).ToString();
+                newRow.Cells[1].Range.Text = specieGroup.Count().ToString();
+
+                rowNumber++;
             }
 
+            string[] treeEvaluations = { TreeEvaluations.VeryHigh, TreeEvaluations.High, TreeEvaluations.Medium, TreeEvaluations.Low };
+            IEnumerable<IGrouping<string, Tree>> groupsByEvaluation = trees.GroupBy(t => t.TreeEvaluation);
+            Dictionary<string, int> countByEvaluationDic = treeEvaluations
+                .ToDictionary(e => e, e => groupsByEvaluation.FirstOrDefault(g => g.Key == e)?.Count() ?? 0);
+
+            // Write count summary row
+            Row countSummaryRow = table.Rows[rowNumber];
+
+            countSummaryRow.Cells[5].Range.Text = countByEvaluationDic[TreeEvaluations.VeryHigh].ToString();
+            countSummaryRow.Cells[4].Range.Text = countByEvaluationDic[TreeEvaluations.High].ToString();
+            countSummaryRow.Cells[3].Range.Text = countByEvaluationDic[TreeEvaluations.Medium].ToString();
+            countSummaryRow.Cells[2].Range.Text = countByEvaluationDic[TreeEvaluations.Low].ToString();
+            countSummaryRow.Cells[1].Range.Text = trees.Count.ToString();
+            rowNumber++;
+
+            // Write percentage summary row
+            Row percentageSummaryRow = table.Rows[rowNumber];
+            int totalNumberOfTress = trees.Count;
+            percentageSummaryRow.Cells[5].Range.Text = $"{100 * countByEvaluationDic[TreeEvaluations.VeryHigh] / totalNumberOfTress} %";
+            percentageSummaryRow.Cells[4].Range.Text = $"{100 * countByEvaluationDic[TreeEvaluations.High] / totalNumberOfTress} %";
+            percentageSummaryRow.Cells[3].Range.Text = $"{100 * countByEvaluationDic[TreeEvaluations.Medium] / totalNumberOfTress} %";
+            percentageSummaryRow.Cells[2].Range.Text = $"{100 * countByEvaluationDic[TreeEvaluations.Low] / totalNumberOfTress} %";
+            percentageSummaryRow.Cells[1].Range.Text = "100 %";
+
+            // color the header
+            Row headerRow = table.Rows[1];
+            headerRow.Cells[5].Range.Shading.BackgroundPatternColor = WdColor.wdColorRed;
+            headerRow.Cells[4].Range.Shading.BackgroundPatternColor = WdColor.wdColorGreen;
+            headerRow.Cells[3].Range.Shading.BackgroundPatternColor = WdColor.wdColorGray30;
+            headerRow.Cells[2].Range.Shading.BackgroundPatternColor = WdColor.wdColorYellow;
         }
 
         private static void AddFirstTable(Document doc, List<Tree> trees)
         {
-
             var tableColumns = new List<string>(15)
             {
                 "מספר סידורי",
@@ -222,12 +262,36 @@ namespace WindowsFormsApp1
             }
         }
 
-        private static Table CreateTableWithHeaders(Document doc, int rows, int cols, List<string> tableColumns)
+        private static void AddTitleParagraph(Document doc, string title, int size = 16, int bold = 1, WdParagraphAlignment alignment = WdParagraphAlignment.wdAlignParagraphCenter)
         {
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                return;
+            }
+            // Add a title to the document
+            Paragraph titleParagraph = doc.Paragraphs.Add();
+            titleParagraph.Range.Text = title;
+
+            // Format the title (optional)
+            titleParagraph.Range.Font.Bold = bold; // Make the text bold
+            titleParagraph.Range.Font.Size = size; // Set the font size
+            titleParagraph.Range.ParagraphFormat.Alignment = alignment;
+        }
+
+        private static Table CreateTableWithHeaders(Document doc, int rows, int cols, List<string> tableColumns, string title = "")
+        {
+             AddTitleParagraph(doc, title);
+
             // revers since this is hebrew
             tableColumns.Reverse();
 
-            Table table = doc.Tables.Add(doc.Range(), NumRows: rows, NumColumns: cols);
+            // Add a new paragraph before adding the new table
+            doc.Paragraphs.Add();
+
+            // Get the range after the last paragraph
+            Range range = doc.Paragraphs[doc.Paragraphs.Count].Range;
+
+            Table table = doc.Tables.Add(range, NumRows: rows, NumColumns: cols);
 
             // Make the table borders visible
             table.Borders.Enable = 1;

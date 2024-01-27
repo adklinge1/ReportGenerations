@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="ExcelReader.cs" />
     <Compile Include="Models\Tree.cs" />
+    <Compile Include="Models\TreeEvaluation.cs" />
     <Compile Include="ReportGeneratorForm.cs">
       <SubType>Form</SubType>
     </Compile>
