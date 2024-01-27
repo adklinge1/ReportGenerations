@@ -92,7 +92,7 @@ namespace WindowsFormsApp1
                 Document doc = string.IsNullOrWhiteSpace(templatePath) ? wordApp.Documents.Add() : wordApp.Documents.Open(templatePath);
 
                 // TODO: add table after images
-                AddTreesTable(doc, excelFilePath);
+                AddTreesTables(doc, excelFilePath);
 
                 // Insert an empty paragraph for spacing
                 Paragraph spacingParagraph = doc.Paragraphs.Add();
@@ -152,10 +152,21 @@ namespace WindowsFormsApp1
             }
         }
 
-        private void AddTreesTable(Document doc, string excelFile)
+        private void AddTreesTables(Document doc, string excelFile)
         {
             List<Tree> trees = ExcelReader.ReadExcelFile(excelFile);
-            folderPathTxtLabel.Text = $@"Read: {trees?.Count ?? 0} trees from excel file";
+            folderPathTxtLabel.Text = $@"Reads: {trees?.Count ?? 0} trees from excel file";
+
+            AddFirstTable(doc, trees);
+        }
+
+        private static void AddSecondTable(Document doc, List<Tree> trees)
+        {
+
+        }
+
+        private static void AddFirstTable(Document doc, List<Tree> trees)
+        {
 
             var tableColumns = new List<string>(15)
             {
@@ -176,9 +187,21 @@ namespace WindowsFormsApp1
                 "סטטוס מוצע"
             };
 
+            Table table = CreateTableWithHeaders(doc, rows: trees.Count + 1, cols: tableColumns.Count, tableColumns);
+
+            // Add data rows
+            for (int i = 0; i < trees.Count; i++)
+            {
+                AddTreeToFirstTable(table, trees[i], rowNumber: i + 2);
+            }
+        }
+
+        private static Table CreateTableWithHeaders(Document doc, int rows, int cols, List<string> tableColumns)
+        {
+            // revers since this is hebrew
             tableColumns.Reverse();
 
-            Table table = doc.Tables.Add(doc.Range(), NumRows: trees.Count + 1, NumColumns: tableColumns.Count);
+            Table table = doc.Tables.Add(doc.Range(), NumRows: rows, NumColumns: cols);
 
             // Make the table borders visible
             table.Borders.Enable = 1;
@@ -194,14 +217,10 @@ namespace WindowsFormsApp1
                 headerCell.Range.Font.Bold = 1;
             }
 
-            // Add data rows
-            for (int i = 0; i < trees.Count; i++)
-            {
-                AddTreeToTable(table, trees[i], rowNumber: i + 2);
-            }
+            return table;
         }
 
-        static void AddTreeToTable(Table table, Tree tree, int rowNumber)
+        static void AddTreeToFirstTable(Table table, Tree tree, int rowNumber)
         {
             Row newRow = table.Rows[rowNumber];
 
