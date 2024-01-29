@@ -39,6 +39,9 @@
     <Reference Include="DocumentFormat.OpenXml.Framework, Version=3.0.0.0, Culture=neutral, PublicKeyToken=8fb06cb64d019a17, processorArchitecture=MSIL">
       <HintPath>..\packages\DocumentFormat.OpenXml.Framework.3.0.0\lib\net46\DocumentFormat.OpenXml.Framework.dll</HintPath>
     </Reference>
+    <Reference Include="HtmlAgilityPack, Version=1.11.58.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlAgilityPack.1.11.58\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -55,6 +58,8 @@
   <ItemGroup>
     <Compile Include="ExcelReader.cs" />
     <Compile Include="Models\Tree.cs" />
+    <Compile Include="Models\TreeCalculator.cs" />
+    <Compile Include="Models\TreeEvaluation.cs" />
     <Compile Include="ReportGeneratorForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -120,5 +125,10 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <Content Include="TreeCalculator\StaticHtmlFile.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

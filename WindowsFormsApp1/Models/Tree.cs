@@ -45,6 +45,8 @@ namespace WindowsFormsApp1.Models
 
         // TODO: add trserifi
 
+        public bool HasMultipleStem => false;
+
         public int Index { get; }
 
         public string TreeEvaluation { get; }

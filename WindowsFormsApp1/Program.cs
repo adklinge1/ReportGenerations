@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
+using WindowsFormsApp1.Models;
 
 namespace WindowsFormsApp1
 {
@@ -15,6 +17,10 @@ namespace WindowsFormsApp1
             Application.SetCompatibleTextRenderingDefault(false);
             // ExcelReader.ReadExcelFile("C:\\Users\\adklinge\\source\\repos\\GenerateReport\\WindowsFormsApp1\\ExcelTemplate.xlsx");
             Application.Run(new ReportGeneratorForm());
+            //TreeCalculator t = new TreeCalculator();
+            //Dictionary<string, double> x = t.FetchTreePricesAsync().Result;
+            //
+            //return;
         }
     }
 }

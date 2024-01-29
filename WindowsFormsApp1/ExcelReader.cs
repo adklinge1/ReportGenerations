@@ -5,12 +5,22 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using WindowsFormsApp1.Models;
 
-namespace WindowsFormsApp1
+namespace WindowsFormsApp1 
 {
     public static class ExcelReader
     {
+        private static TreeCalculator _treePriceCalculator;
         public static List<Tree> ReadExcelFile(string fileName)
         {
+            try
+            {
+                _treePriceCalculator = _treePriceCalculator == null ?  new TreeCalculator() : _treePriceCalculator;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+
             using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(fileName, false))
             {
                 WorkbookPart workbookPart = spreadsheetDocument.WorkbookPart ?? spreadsheetDocument.AddWorkbookPart();
@@ -124,7 +134,12 @@ namespace WindowsFormsApp1
             }
         }
 
-        return new Tree(index, species, height, diameter, health, canopy, location, speciesValue, price, numberOfStems, isTserifi);
+        var tree =  new Tree(index, species, height, diameter, health, canopy, location, speciesValue, price, numberOfStems, isTserifi);
+
+        // Fetch price 
+        tree.PriceInNis = _treePriceCalculator?.TryToGetTreePrice(tree) ?? 0;
+            
+        return tree;
     }
 
 

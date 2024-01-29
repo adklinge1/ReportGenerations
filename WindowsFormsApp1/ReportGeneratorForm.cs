@@ -31,10 +31,10 @@ namespace WindowsFormsApp1
 
         private void btnGenerateDocument_Click(object sender, EventArgs e)
         {
-            string directoryPath = txtDirectoryPath.Text;
-            string templatePath = templatePathTextBox.Text;
+            string directoryPath = txtDirectoryPath.Text?.TrimEnd('"')?.TrimStart('"');
+            string templatePath = templatePathTextBox.Text?.TrimEnd('"')?.TrimStart('"');
             string reportName = reportNameTextBox.Text;
-            string excelFilePath = excelFilePahTextBox.Text;
+            string excelFilePath = excelFilePahTextBox.Text?.TrimEnd('"')?.TrimStart('"'); 
 
             // Save the document inside the provided directoryPath with the name "GeneratedDocument.docx"
             string outputReportPath = Path.Combine(directoryPath, $"{reportName}.docx");
@@ -241,9 +241,10 @@ namespace WindowsFormsApp1
         private string[] ValidateAndExtractImageFiles(string directoryPath)
         {
             // Get all image files in the directory and sort them by name
-            string[] imagePaths = Directory.GetFiles(directoryPath, "*.jpg", SearchOption.TopDirectoryOnly)
-                .Concat(Directory.GetFiles(directoryPath, "*.jpeg", SearchOption.TopDirectoryOnly))
-                .Concat(Directory.GetFiles(directoryPath, "*.png", SearchOption.TopDirectoryOnly))
+
+            string[] imagePaths = Directory.GetFiles(directoryPath, "*.jpg", SearchOption.AllDirectories)
+                .Concat(Directory.GetFiles(directoryPath, "*.jpeg", SearchOption.AllDirectories))
+                .Concat(Directory.GetFiles(directoryPath, "*.png", SearchOption.AllDirectories))
                 .ToArray();
 
             string[] invalidImageNames = imagePaths?.Where(img => int.TryParse(Path.GetFileNameWithoutExtension(img), out _) == false).ToArray();
