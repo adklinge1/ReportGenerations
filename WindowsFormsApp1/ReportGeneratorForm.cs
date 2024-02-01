@@ -92,13 +92,13 @@ namespace WindowsFormsApp1
                 Document doc = string.IsNullOrWhiteSpace(templatePath) ? wordApp.Documents.Add() : wordApp.Documents.Open(templatePath);
 
                 // TODO: add table after images
-                AddTreesTable(doc, excelFilePath);
+                AddTreesTables(doc, excelFilePath);
 
                 // Insert an empty paragraph for spacing
                 Paragraph spacingParagraph = doc.Paragraphs.Add();
                 spacingParagraph.Range.InsertParagraphBefore();
 
-                // ExtractAllImagesIntoDoc(imagePaths, doc);
+                ExtractAllImagesIntoDoc(imagePaths, doc);
                 
                 doc.SaveAs2(outputReportPath);
 
@@ -152,11 +152,140 @@ namespace WindowsFormsApp1
             }
         }
 
-        private void AddTreesTable(Document doc, string excelFile)
+        private void AddTreesTables(Document doc, string excelFile)
         {
             List<Tree> trees = ExcelReader.ReadExcelFile(excelFile);
-            folderPathTxtLabel.Text = $@"Read: {trees?.Count ?? 0} trees from excel file";
+            folderPathTxtLabel.Text = $@"Reads: {trees?.Count ?? 0} trees from excel file";
 
+            AddFirstTable(doc, trees);
+
+            AddTitleParagraph(doc, "טבלת ערכיות העצים");
+
+            
+            AddSecondTable(doc, trees);
+            AddThirdTable(doc, trees);
+        }
+
+        private static void AddThirdTable(Document doc, List<Tree> trees)
+        {
+            var tableColumns = new List<string>(15)
+            {
+                "מספר סידורי",
+                "מין העץ ",
+                "כמות עצים",
+                "גובה העץ",
+                "מספר גזעים",
+                "קוטר גזע",
+                "(סך ערכיות העץ (0-20",
+                "ערכיות העץ",
+                "סטטוס מוצע"
+            };
+
+            Table table = CreateTableWithHeaders(
+                doc,
+                rows: trees.Count + 1,
+                cols: tableColumns.Count,
+                tableColumns,
+                title: "טבלת מידע מרכזת");
+
+            int rowNumber = 2;
+
+            foreach (Tree tree in trees)
+            {
+                Row newRow = table.Rows[rowNumber];
+
+                // Set the text for each cell in the row.
+                newRow.Cells[9].Range.Text = tree.Index.ToString();
+                newRow.Cells[8].Range.Text = tree.Species;
+                newRow.Cells[7].Range.Text = tree.Quatity.ToString();
+                newRow.Cells[6].Range.Text = tree.Height.ToString();
+                newRow.Cells[5].Range.Text = tree.NumberOfStems.ToString();
+                newRow.Cells[4].Range.Text = tree.StemDiameter.ToString();
+                newRow.Cells[3].Range.Text = tree.SumOfValues.ToString();
+                newRow.Cells[2].Range.Text = tree.TreeEvaluation;
+                newRow.Cells[1].Range.Text = tree.Status;
+
+                // Color by evaluation
+                newRow.Cells[2].Range.Shading.BackgroundPatternColor = tree.TreeEvaluation == TreeEvaluations.Low ? WdColor.wdColorYellow :
+                    tree.TreeEvaluation == TreeEvaluations.Medium ? WdColor.wdColorGray30 :
+                    tree.TreeEvaluation == TreeEvaluations.High ? WdColor.wdColorGreen :
+                    WdColor.wdColorRed;
+
+                rowNumber++;
+            }
+        }
+
+        private static void AddSecondTable(Document doc, List<Tree> trees)
+        {
+            var tableColumns = new List<string>()
+            {
+                "מין העץ",
+                "שם מדעי",
+                "ערכיות גבוהה מאד",
+                "ערכיות גבוהה",
+                "ערכיות בינונית",
+                "ערכיות נמוכה",
+                "סכהכ"
+            };
+
+            IEnumerable<IGrouping<string, Tree>> groupsBySpecie = trees.GroupBy(t => t.Species);
+
+            // Number of rows is number of distinct species + 2 summary rows + header
+            int numberOfRows = groupsBySpecie.Count() + 2 + 1;
+
+            Table table = CreateTableWithHeaders(doc, rows: numberOfRows, cols: tableColumns.Count, tableColumns, "טבלת סיכום סיווג");
+
+            int rowNumber = 2;
+            foreach (var specieGroup in groupsBySpecie)
+            {
+                Row newRow = table.Rows[rowNumber];
+
+                // Set the text for each cell in the row.
+                newRow.Cells[7].Range.Text = specieGroup.Key;
+                newRow.Cells[6].Range.Text = "< Unknown >";
+                newRow.Cells[5].Range.Text = specieGroup.Count(t => t.TreeEvaluation == TreeEvaluations.VeryHigh).ToString();
+                newRow.Cells[4].Range.Text = specieGroup.Count(t => t.TreeEvaluation == TreeEvaluations.High).ToString();
+                newRow.Cells[3].Range.Text = specieGroup.Count(t => t.TreeEvaluation == TreeEvaluations.Medium).ToString();
+                newRow.Cells[2].Range.Text = specieGroup.Count(t => t.TreeEvaluation == TreeEvaluations.Low).ToString();
+                newRow.Cells[1].Range.Text = specieGroup.Count().ToString();
+
+                rowNumber++;
+            }
+
+            string[] treeEvaluations = { TreeEvaluations.VeryHigh, TreeEvaluations.High, TreeEvaluations.Medium, TreeEvaluations.Low };
+            IEnumerable<IGrouping<string, Tree>> groupsByEvaluation = trees.GroupBy(t => t.TreeEvaluation);
+            Dictionary<string, int> countByEvaluationDic = treeEvaluations
+                .ToDictionary(e => e, e => groupsByEvaluation.FirstOrDefault(g => g.Key == e)?.Count() ?? 0);
+
+            // Write count summary row
+            Row countSummaryRow = table.Rows[rowNumber];
+
+            countSummaryRow.Cells[5].Range.Text = countByEvaluationDic[TreeEvaluations.VeryHigh].ToString();
+            countSummaryRow.Cells[4].Range.Text = countByEvaluationDic[TreeEvaluations.High].ToString();
+            countSummaryRow.Cells[3].Range.Text = countByEvaluationDic[TreeEvaluations.Medium].ToString();
+            countSummaryRow.Cells[2].Range.Text = countByEvaluationDic[TreeEvaluations.Low].ToString();
+            countSummaryRow.Cells[1].Range.Text = trees.Count.ToString();
+            rowNumber++;
+
+            // Write percentage summary row
+            Row percentageSummaryRow = table.Rows[rowNumber];
+            int totalNumberOfTress = trees.Count;
+            percentageSummaryRow.Cells[5].Range.Text = $"{100 * countByEvaluationDic[TreeEvaluations.VeryHigh] / totalNumberOfTress} %";
+            percentageSummaryRow.Cells[4].Range.Text = $"{100 * countByEvaluationDic[TreeEvaluations.High] / totalNumberOfTress} %";
+            percentageSummaryRow.Cells[3].Range.Text = $"{100 * countByEvaluationDic[TreeEvaluations.Medium] / totalNumberOfTress} %";
+            percentageSummaryRow.Cells[2].Range.Text = $"{100 * countByEvaluationDic[TreeEvaluations.Low] / totalNumberOfTress} %";
+            percentageSummaryRow.Cells[1].Range.Text = "100 %";
+
+            // color the header
+            Row headerRow = table.Rows[1];
+            headerRow.Cells[5].Range.Shading.BackgroundPatternColor = WdColor.wdColorRed;
+            headerRow.Cells[4].Range.Shading.BackgroundPatternColor = WdColor.wdColorGreen;
+            headerRow.Cells[3].Range.Shading.BackgroundPatternColor = WdColor.wdColorGray30;
+            headerRow.Cells[2].Range.Shading.BackgroundPatternColor = WdColor.wdColorYellow;
+        }
+
+        private static void AddFirstTable(Document doc, List<Tree> trees)
+        {
             var tableColumns = new List<string>(15)
             {
                 "מספר סידורי",
@@ -176,9 +305,45 @@ namespace WindowsFormsApp1
                 "סטטוס מוצע"
             };
 
+            Table table = CreateTableWithHeaders(doc, rows: trees.Count + 1, cols: tableColumns.Count, tableColumns);
+
+            // Add data rows
+            for (int i = 0; i < trees.Count; i++)
+            {
+                AddTreeToFirstTable(table, trees[i], rowNumber: i + 2);
+            }
+        }
+
+        private static void AddTitleParagraph(Document doc, string title, int size = 16, int bold = 1, WdParagraphAlignment alignment = WdParagraphAlignment.wdAlignParagraphCenter)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                return;
+            }
+            // Add a title to the document
+            Paragraph titleParagraph = doc.Paragraphs.Add();
+            titleParagraph.Range.Text = title;
+
+            // Format the title (optional)
+            titleParagraph.Range.Font.Bold = bold; // Make the text bold
+            titleParagraph.Range.Font.Size = size; // Set the font size
+            titleParagraph.Range.ParagraphFormat.Alignment = alignment;
+        }
+
+        private static Table CreateTableWithHeaders(Document doc, int rows, int cols, List<string> tableColumns, string title = "")
+        {
+             AddTitleParagraph(doc, title);
+
+            // revers since this is hebrew
             tableColumns.Reverse();
 
-            Table table = doc.Tables.Add(doc.Range(), NumRows: trees.Count + 1, NumColumns: tableColumns.Count);
+            // Add a new paragraph before adding the new table
+            doc.Paragraphs.Add();
+
+            // Get the range after the last paragraph
+            Range range = doc.Paragraphs[doc.Paragraphs.Count].Range;
+
+            Table table = doc.Tables.Add(range, NumRows: rows, NumColumns: cols);
 
             // Make the table borders visible
             table.Borders.Enable = 1;
@@ -194,14 +359,10 @@ namespace WindowsFormsApp1
                 headerCell.Range.Font.Bold = 1;
             }
 
-            // Add data rows
-            for (int i = 0; i < trees.Count; i++)
-            {
-                AddTreeToTable(table, trees[i], rowNumber: i + 2);
-            }
+            return table;
         }
 
-        static void AddTreeToTable(Table table, Tree tree, int rowNumber)
+        static void AddTreeToFirstTable(Table table, Tree tree, int rowNumber)
         {
             Row newRow = table.Rows[rowNumber];
 
@@ -232,7 +393,7 @@ namespace WindowsFormsApp1
             int sumOfValues = tree.SumOfValues;
             
             newRow.Cells[6].Range.Shading.BackgroundPatternColor = sumOfValues <= 6 ? WdColor.wdColorYellow :
-                sumOfValues <= 13 ? WdColor.wdColorGray10 :
+                sumOfValues <= 13 ? WdColor.wdColorGray30 :
                 sumOfValues <= 16 ? WdColor.wdColorGreen :
                 WdColor.wdColorRed;
 

@@ -15,12 +15,8 @@ namespace WindowsFormsApp1
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            // ExcelReader.ReadExcelFile("C:\\Users\\adklinge\\source\\repos\\GenerateReport\\WindowsFormsApp1\\ExcelTemplate.xlsx");
             Application.Run(new ReportGeneratorForm());
             //TreeCalculator t = new TreeCalculator();
-            //Dictionary<string, double> x = t.FetchTreePricesAsync().Result;
-            //
-            //return;
         }
     }
 }
