@@ -40,9 +40,8 @@ namespace WindowsFormsApp1
                 }
 
                 List<Tree> trees = new List<Tree>(numberOfTrees);
-                
-                // Read all rows and aocnvert to Trees
-                // TODO: Stop when all cells are empty
+
+                // Read all rows and convert to Trees
                 foreach (Row r in rows.Skip(1))
                 {
                     if (r.Elements<Cell>().All(c => GetCellValue(c, sharedStringTable) == string.Empty))
@@ -57,7 +56,7 @@ namespace WindowsFormsApp1
             }
         }
 
-    private static Tree ConvertRowToTree(Row row, SharedStringTable sharedString)
+      private static Tree ConvertRowToTree(Row row, SharedStringTable sharedString)
     {
         int index = -1;
         string species = string.Empty;
@@ -68,6 +67,7 @@ namespace WindowsFormsApp1
         int location = -1;
         int speciesValue = -1;
         double price = -1;
+        string scientificName = "Unknown";
         int numberOfStems = 1;
         bool isTserifi = false;
             
@@ -116,10 +116,15 @@ namespace WindowsFormsApp1
                     case "I":
                         price = double.Parse(cellValue);
                         break;
+
                     case "J":
+                        scientificName = cellValue;
+                        break;
+
+                    case "K":
                         numberOfStems = !string.IsNullOrWhiteSpace(cellValue) && int.TryParse(cellValue, out int numOfStems) ? numOfStems : 1;
                         break;
-                    case "K":
+                    case "L":
                         isTserifi = !string.IsNullOrWhiteSpace(cellValue) && int.TryParse(cellValue, out int tserifi) && tserifi == 1;
                         break;
 
@@ -127,14 +132,14 @@ namespace WindowsFormsApp1
                         // throw new ArgumentException($"Excel table shoudn't have a cell at column : {columneName}");
                         break;
                     }
-                }
+            }
             catch (Exception ex)
             {
                 throw new ArgumentException($"Column :{columneName} in row {row.RowIndex} can not be: {cellValue}\n{ex}");
             }
         }
 
-        var tree =  new Tree(index, species, height, diameter, health, canopy, location, speciesValue, price, numberOfStems, isTserifi);
+        var tree =  new Tree(index, species, height, diameter, health, canopy, location, speciesValue, price, scientificName, numberOfStems, isTserifi);
 
         // Fetch price 
         tree.PriceInNis = _treePriceCalculator?.TryToGetTreePrice(tree) ?? 0;

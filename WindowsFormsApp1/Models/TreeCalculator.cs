@@ -17,10 +17,13 @@ namespace WindowsFormsApp1.Models
         {
         }
 
+        public async Task LoadTreePricesAsync()
+        {
+            _treeTypeToPriceFactor = _treeTypeToPriceFactor ?? await FetchTreePricesAsync();
+        }
+
         public double? TryToGetTreePrice(Tree tree)
         {
-            _treeTypeToPriceFactor = _treeTypeToPriceFactor ?? FetchTreePricesAsync().Result;
-
             if (tree == null || string.IsNullOrWhiteSpace(tree.Species))
             {
                 return null;
@@ -52,8 +55,12 @@ namespace WindowsFormsApp1.Models
 
             if (tree.LocationRate > 0 && tree.HealthRate > 0 && treeSize > 0)
             {
+                // In the agriculture department the tree health and location are numbers between [0-1]
+                double healthNormalized = (double)tree.HealthRate / 5;
+                double locationNormalized = (double)tree.LocationRate / 5;
+
                 // Actual calculation logic
-                return 20 * treeFactor * tree.LocationRate * tree.HealthRate * treeSize;
+                return 20 * treeFactor * locationNormalized * healthNormalized * treeSize;
             }
 
             // Return a default value or handle the case when inputs are not valid
