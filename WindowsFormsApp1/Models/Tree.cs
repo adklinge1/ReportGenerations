@@ -18,6 +18,7 @@ namespace WindowsFormsApp1.Models
             int locationRate,
             int speciesRate,
             double treePrice,
+            string scientificName,
             int numberOfStems = 1,
             bool isTreeTserifi = false)
         {
@@ -30,6 +31,7 @@ namespace WindowsFormsApp1.Models
             LocationRate = locationRate;
             SpeciesRate = speciesRate;
             PriceInNis = treePrice;
+            ScientificName = scientificName;
             NumberOfStems = numberOfStems;
 
             SumOfValues = HealthRate + LocationRate + SpeciesRate + CanopyRate;
@@ -43,6 +45,10 @@ namespace WindowsFormsApp1.Models
             Clonability = SumOfValues <= 12 || HealthRate <= 2 ? "נמוכה" : "גבוהה";
         }
 
+        // TODO: add trserifi
+
+        public bool HasMultipleStem => false;
+
         public int Index { get; }
 
         public string TreeEvaluation { get; }
@@ -50,6 +56,7 @@ namespace WindowsFormsApp1.Models
         public int Quatity => 1;
 
         public string Species { get; set; }
+        public string ScientificName { get; set; }
 
         public double Height { get; set; }
 

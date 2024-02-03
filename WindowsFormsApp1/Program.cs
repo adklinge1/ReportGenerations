@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
+using WindowsFormsApp1.Models;
 
 namespace WindowsFormsApp1
 {
@@ -13,7 +15,11 @@ namespace WindowsFormsApp1
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new ReportGeneratorForm());
+            TreeCalculator treeCalc = new TreeCalculator();
+            treeCalc.LoadTreePricesAsync().Wait();
+
+            Application.Run(new ReportGeneratorForm(treeCalc));
+            
         }
     }
 }

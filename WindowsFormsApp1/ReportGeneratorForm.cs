@@ -13,9 +13,12 @@ namespace WindowsFormsApp1
 {
     public partial class ReportGeneratorForm : Form
     {
-        public ReportGeneratorForm()
+        private readonly TreeCalculator _treeCalculator;
+
+        public ReportGeneratorForm(TreeCalculator treeCalculator)
         {
             InitializeComponent();
+            _treeCalculator = treeCalculator;
 
             // Initialize the controls
             statusStrip1 = new StatusStrip();
@@ -31,10 +34,10 @@ namespace WindowsFormsApp1
 
         private void btnGenerateDocument_Click(object sender, EventArgs e)
         {
-            string directoryPath = txtDirectoryPath.Text;
-            string templatePath = templatePathTextBox.Text;
+            string directoryPath = txtDirectoryPath.Text?.TrimEnd('"')?.TrimStart('"');
+            string templatePath = templatePathTextBox.Text?.TrimEnd('"')?.TrimStart('"');
             string reportName = reportNameTextBox.Text;
-            string excelFilePath = excelFilePahTextBox.Text;
+            string excelFilePath = excelFilePahTextBox.Text?.TrimEnd('"')?.TrimStart('"'); 
 
             // Save the document inside the provided directoryPath with the name "GeneratedDocument.docx"
             string outputReportPath = Path.Combine(directoryPath, $"{reportName}.docx");
@@ -157,6 +160,14 @@ namespace WindowsFormsApp1
             List<Tree> trees = ExcelReader.ReadExcelFile(excelFile);
             folderPathTxtLabel.Text = $@"Reads: {trees?.Count ?? 0} trees from excel file";
 
+            foreach (var tree in trees)
+            {
+                if (tree.PriceInNis <= 0)
+                {
+                    tree.PriceInNis = _treeCalculator.TryToGetTreePrice(tree) ?? tree.PriceInNis;
+                }
+            }
+
             AddFirstTable(doc, trees);
 
             AddTitleParagraph(doc, "טבלת ערכיות העצים");
@@ -242,7 +253,7 @@ namespace WindowsFormsApp1
 
                 // Set the text for each cell in the row.
                 newRow.Cells[7].Range.Text = specieGroup.Key;
-                newRow.Cells[6].Range.Text = "< Unknown >";
+                newRow.Cells[6].Range.Text = specieGroup.FirstOrDefault()?.ScientificName ?? "< Unknown >";
                 newRow.Cells[5].Range.Text = specieGroup.Count(t => t.TreeEvaluation == TreeEvaluations.VeryHigh).ToString();
                 newRow.Cells[4].Range.Text = specieGroup.Count(t => t.TreeEvaluation == TreeEvaluations.High).ToString();
                 newRow.Cells[3].Range.Text = specieGroup.Count(t => t.TreeEvaluation == TreeEvaluations.Medium).ToString();
@@ -270,10 +281,10 @@ namespace WindowsFormsApp1
             // Write percentage summary row
             Row percentageSummaryRow = table.Rows[rowNumber];
             int totalNumberOfTress = trees.Count;
-            percentageSummaryRow.Cells[5].Range.Text = $"{100 * countByEvaluationDic[TreeEvaluations.VeryHigh] / totalNumberOfTress} %";
-            percentageSummaryRow.Cells[4].Range.Text = $"{100 * countByEvaluationDic[TreeEvaluations.High] / totalNumberOfTress} %";
-            percentageSummaryRow.Cells[3].Range.Text = $"{100 * countByEvaluationDic[TreeEvaluations.Medium] / totalNumberOfTress} %";
-            percentageSummaryRow.Cells[2].Range.Text = $"{100 * countByEvaluationDic[TreeEvaluations.Low] / totalNumberOfTress} %";
+            percentageSummaryRow.Cells[5].Range.Text = $"{Math.Round(100.0 * countByEvaluationDic[TreeEvaluations.VeryHigh] / totalNumberOfTress, 2)} %";
+            percentageSummaryRow.Cells[4].Range.Text = $"{Math.Round(100.0 * countByEvaluationDic[TreeEvaluations.High] / totalNumberOfTress, 2)} %";
+            percentageSummaryRow.Cells[3].Range.Text = $"{Math.Round(100.0 * countByEvaluationDic[TreeEvaluations.Medium] / totalNumberOfTress, 2)} %";
+            percentageSummaryRow.Cells[2].Range.Text = $"{Math.Round(100.0 * countByEvaluationDic[TreeEvaluations.Low] / totalNumberOfTress, 2)} %";
             percentageSummaryRow.Cells[1].Range.Text = "100 %";
 
             // color the header
@@ -402,9 +413,10 @@ namespace WindowsFormsApp1
         private string[] ValidateAndExtractImageFiles(string directoryPath)
         {
             // Get all image files in the directory and sort them by name
-            string[] imagePaths = Directory.GetFiles(directoryPath, "*.jpg", SearchOption.TopDirectoryOnly)
-                .Concat(Directory.GetFiles(directoryPath, "*.jpeg", SearchOption.TopDirectoryOnly))
-                .Concat(Directory.GetFiles(directoryPath, "*.png", SearchOption.TopDirectoryOnly))
+
+            string[] imagePaths = Directory.GetFiles(directoryPath, "*.jpg", SearchOption.AllDirectories)
+                .Concat(Directory.GetFiles(directoryPath, "*.jpeg", SearchOption.AllDirectories))
+                .Concat(Directory.GetFiles(directoryPath, "*.png", SearchOption.AllDirectories))
                 .ToArray();
 
             string[] invalidImageNames = imagePaths?.Where(img => int.TryParse(Path.GetFileNameWithoutExtension(img), out _) == false).ToArray();
