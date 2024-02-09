@@ -17,9 +17,8 @@ namespace WindowsFormsApp1
             Application.SetCompatibleTextRenderingDefault(false);
             TreeCalculator treeCalc = new TreeCalculator();
             treeCalc.LoadTreePricesAsync().Wait();
-
             Application.Run(new ReportGeneratorForm(treeCalc));
-            
+
         }
     }
 }

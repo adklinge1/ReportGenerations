@@ -157,7 +157,7 @@ namespace WindowsFormsApp1
 
         private void AddTreesTables(Document doc, string excelFile)
         {
-            List<Tree> trees = ExcelReader.ReadExcelFile(excelFile);
+            List<Tree> trees = ExcelReader.ExcelReader.ReadExcelFile(excelFile);
             folderPathTxtLabel.Text = $@"Reads: {trees?.Count ?? 0} trees from excel file";
 
             foreach (var tree in trees)
