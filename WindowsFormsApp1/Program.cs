@@ -18,7 +18,6 @@ namespace WindowsFormsApp1
             TreeCalculator treeCalc = new TreeCalculator();
             treeCalc.LoadTreePricesAsync().Wait();
             Application.Run(new ReportGeneratorForm(treeCalc));
-
         }
     }
 }
