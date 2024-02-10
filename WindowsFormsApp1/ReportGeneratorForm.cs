@@ -95,7 +95,14 @@ namespace WindowsFormsApp1
                 Document doc = string.IsNullOrWhiteSpace(templatePath) ? wordApp.Documents.Add() : wordApp.Documents.Open(templatePath);
 
                 // TODO: add table after images
-                AddTreesTables(doc, excelFilePath);
+                List<Tree> trees = ExcelReader.ExcelReader.ReadExcelFile(excelFilePath);
+
+                if (trees.Count != imagePaths.Length)
+                {
+                    MessageBox.Show($@"The number of trees in the excel ({trees.Count}) does not match the numbers of images in folder ({imagePaths.Length})", @"Inconsistent number of trees", MessageBoxButtons.OKCancel | MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+
+                AddTreesTables(doc, trees);
 
                 // Insert an empty paragraph for spacing
                 Paragraph spacingParagraph = doc.Paragraphs.Add();
@@ -123,11 +130,14 @@ namespace WindowsFormsApp1
             }
         }
 
-        private static void ExtractAllImagesIntoDoc(string[] imagePaths, Document doc)
+        private void ExtractAllImagesIntoDoc(string[] imagePaths, Document doc)
         {
+            int i = 1;
             // Iterate through all sorted image files in the directory
             foreach (string imagePath in imagePaths)
             {
+                folderPathTxtLabel.Text = $@"Extracting image {i}";
+
                 // Get the image name without extension
                 string imageName = Path.GetFileNameWithoutExtension(imagePath);
 
@@ -152,12 +162,13 @@ namespace WindowsFormsApp1
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(inlineShape);
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(paragraph);
+
+                i++;
             }
         }
 
-        private void AddTreesTables(Document doc, string excelFile)
+        private void AddTreesTables(Document doc, List<Tree> trees)
         {
-            List<Tree> trees = ExcelReader.ReadExcelFile(excelFile);
             folderPathTxtLabel.Text = $@"Reads: {trees?.Count ?? 0} trees from excel file";
 
             foreach (var tree in trees)
@@ -177,8 +188,10 @@ namespace WindowsFormsApp1
             AddThirdTable(doc, trees);
         }
 
-        private static void AddThirdTable(Document doc, List<Tree> trees)
+        private void AddThirdTable(Document doc, List<Tree> trees)
         {
+            folderPathTxtLabel.Text = @"Building third table";
+
             var tableColumns = new List<string>(15)
             {
                 "מספר סידורי",
@@ -226,8 +239,10 @@ namespace WindowsFormsApp1
             }
         }
 
-        private static void AddSecondTable(Document doc, List<Tree> trees)
+        private void AddSecondTable(Document doc, List<Tree> trees)
         {
+            folderPathTxtLabel.Text = @"Building second table";
+
             var tableColumns = new List<string>()
             {
                 "מין העץ",
@@ -295,8 +310,10 @@ namespace WindowsFormsApp1
             headerRow.Cells[2].Range.Shading.BackgroundPatternColor = WdColor.wdColorYellow;
         }
 
-        private static void AddFirstTable(Document doc, List<Tree> trees)
+        private void AddFirstTable(Document doc, List<Tree> trees)
         {
+            folderPathTxtLabel.Text = @"Building first table";
+
             var tableColumns = new List<string>(15)
             {
                 "מספר סידורי",

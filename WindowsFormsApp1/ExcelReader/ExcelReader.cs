@@ -4,22 +4,18 @@ using System.Linq;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using WindowsFormsApp1.Models;
+using CsvHelper;
+using CsvHelper.Configuration;
+using System.Globalization;
+using System.IO;
 
-namespace WindowsFormsApp1 
+namespace WindowsFormsApp1.ExcelReader 
 {
     public static class ExcelReader
     {
-        private static TreeCalculator _treePriceCalculator;
         public static List<Tree> ReadExcelFile(string fileName)
         {
-            try
-            {
-                _treePriceCalculator = _treePriceCalculator == null ?  new TreeCalculator() : _treePriceCalculator;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
+            Dictionary<string, TreeSpecie> tressSpecies = TryReadTreeSpecies();
 
             using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Open(fileName, false))
             {
@@ -49,14 +45,47 @@ namespace WindowsFormsApp1
                         break;
                     }
 
-                    trees.Add(ConvertRowToTree(r, sharedStringTable));
+                    Tree tree = ConvertRowToTree(r, sharedStringTable);
+
+                     if (tressSpecies.TryGetValue(tree.Species, out TreeSpecie spicie))
+                     {
+                         tree.ScientificName = string.IsNullOrWhiteSpace(tree.ScientificName) ? spicie.ScientificName : tree.ScientificName;
+                         tree.SpeciesRate = tree.SpeciesRate <= 0 ? spicie.SpeciesRate : tree.SpeciesRate;
+                     }
+
+                    trees.Add(tree);
                 }
 
                 return trees;
             }
         }
 
-      private static Tree ConvertRowToTree(Row row, SharedStringTable sharedString)
+        private static Dictionary<string, TreeSpecie> TryReadTreeSpecies(string path = @"ExcelReader\TreeSpeciesToScientificNameAndRate.csv")
+        {
+            Dictionary<string, TreeSpecie> treeNameToScientificNameAndValueDic = new Dictionary<string, TreeSpecie>();
+
+            try
+            {
+                using (var reader = new StreamReader(path))
+                using (var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)))
+                {
+                    IEnumerable<TreeSpecie> records = csv.GetRecords<TreeSpecie>();
+                    foreach (TreeSpecie record in records)
+                    {
+                        treeNameToScientificNameAndValueDic[record.HebrewName] = record;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+
+            return treeNameToScientificNameAndValueDic;
+        }
+
+        private static Tree ConvertRowToTree(Row row, SharedStringTable sharedString)
     {
         int index = -1;
         string species = string.Empty;
@@ -129,7 +158,7 @@ namespace WindowsFormsApp1
                         break;
 
                     default:
-                        // throw new ArgumentException($"Excel table shoudn't have a cell at column : {columneName}");
+                        throw new ArgumentException($"Excel table shoudn't have a cell at column : {columneName}");
                         break;
                     }
             }
@@ -139,12 +168,7 @@ namespace WindowsFormsApp1
             }
         }
 
-        var tree =  new Tree(index, species, height, diameter, health, canopy, location, speciesValue, price, scientificName, numberOfStems, isTserifi);
-
-        // Fetch price 
-        tree.PriceInNis = _treePriceCalculator?.TryToGetTreePrice(tree) ?? 0;
-            
-        return tree;
+        return  new Tree(index, species, height, diameter, health, canopy, location, speciesValue, price, scientificName, numberOfStems, isTserifi);
     }
 
 

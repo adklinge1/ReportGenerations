@@ -12,10 +12,6 @@ namespace WindowsFormsApp1.Models
     public class TreeCalculator
     {
         private Dictionary<string, double> _treeTypeToPriceFactor;
-        
-        public TreeCalculator()
-        {
-        }
 
         public async Task LoadTreePricesAsync()
         {
