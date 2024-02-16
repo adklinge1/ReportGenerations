@@ -99,6 +99,7 @@ namespace WindowsFormsApp1.ExcelReader
         string scientificName = "Unknown";
         int numberOfStems = 1;
         bool isTserifi = false;
+        string comment = String.Empty;
             
         foreach (Cell cell in row.Elements<Cell>())
         {
@@ -143,11 +144,11 @@ namespace WindowsFormsApp1.ExcelReader
                         break;
 
                     case "I":
-                        price = double.Parse(cellValue);
+                        scientificName = cellValue;
                         break;
 
                     case "J":
-                        scientificName = cellValue;
+                        comment = cellValue;
                         break;
 
                     case "K":
@@ -168,7 +169,10 @@ namespace WindowsFormsApp1.ExcelReader
             }
         }
 
-        return  new Tree(index, species, height, diameter, health, canopy, location, speciesValue, price, scientificName, numberOfStems, isTserifi);
+        return  new Tree(index, species, height, diameter, health, canopy, location, speciesValue, price, scientificName, numberOfStems, isTserifi)
+        {
+            Comments = comment
+        };
     }
 
 
