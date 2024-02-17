@@ -49,8 +49,8 @@ namespace WindowsFormsApp1.ExcelReader
 
                      if (tressSpecies.TryGetValue(tree.Species, out TreeSpecie spicie))
                      {
-                         tree.ScientificName = string.IsNullOrWhiteSpace(tree.ScientificName) ? spicie.ScientificName : tree.ScientificName;
-                         tree.SpeciesRate = tree.SpeciesRate <= 0 ? spicie.SpeciesRate : tree.SpeciesRate;
+                         tree.ScientificName = spicie.ScientificName;
+                         tree.SpeciesRate = spicie.SpeciesRate;
                      }
 
                     trees.Add(tree);
