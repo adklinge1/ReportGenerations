@@ -103,9 +103,9 @@ namespace WindowsFormsApp1.ExcelReader
             
         foreach (Cell cell in row.Elements<Cell>())
         {
-            string cellValue = GetCellValue(cell, sharedString);
+            string cellValue = GetCellValue(cell, sharedString).Trim();
 
-            if (cellValue == string.Empty)
+            if (string.IsNullOrWhiteSpace(cellValue))
             {
                 continue;
             }
