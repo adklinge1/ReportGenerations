@@ -32,6 +32,7 @@ namespace WindowsFormsApp1
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ReportGeneratorForm));
             this.btnGenerateDocument = new System.Windows.Forms.Button();
             this.txtDirectoryPath = new System.Windows.Forms.TextBox();
             this.statusTxtLabel = new System.Windows.Forms.Label();
@@ -51,7 +52,7 @@ namespace WindowsFormsApp1
             // btnGenerateDocument
             // 
             this.btnGenerateDocument.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
-            this.btnGenerateDocument.Location = new System.Drawing.Point(831, 959);
+            this.btnGenerateDocument.Location = new System.Drawing.Point(522, 756);
             this.btnGenerateDocument.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
             this.btnGenerateDocument.Name = "btnGenerateDocument";
             this.btnGenerateDocument.Size = new System.Drawing.Size(390, 206);
@@ -114,10 +115,10 @@ namespace WindowsFormsApp1
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
             this.toolStripProgressBar1});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 1269);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 1028);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Padding = new System.Windows.Forms.Padding(3, 0, 37, 0);
-            this.statusStrip1.Size = new System.Drawing.Size(2357, 48);
+            this.statusStrip1.Size = new System.Drawing.Size(2526, 30);
             this.statusStrip1.TabIndex = 7;
             this.statusStrip1.Text = "statusStrip1";
             this.statusStrip1.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.statusStrip1_ItemClicked);
@@ -178,7 +179,7 @@ namespace WindowsFormsApp1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(16F, 31F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(2357, 1317);
+            this.ClientSize = new System.Drawing.Size(2526, 1058);
             this.Controls.Add(this.browseTemplateButton);
             this.Controls.Add(this.browseExcelFileButton);
             this.Controls.Add(this.browseImgFolderButton);
@@ -190,6 +191,8 @@ namespace WindowsFormsApp1
             this.Controls.Add(this.statusTxtLabel);
             this.Controls.Add(this.txtDirectoryPath);
             this.Controls.Add(this.btnGenerateDocument);
+            this.HelpButton = true;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
             this.Name = "ReportGeneratorForm";
             this.Text = "Report Generator";
