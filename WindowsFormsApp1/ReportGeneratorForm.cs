@@ -87,7 +87,7 @@ namespace WindowsFormsApp1
                     return;
                 }
 
-                folderPathTxtLabel.Text = $@"Found: {imagePaths.Length} images to load to report";
+                statusTxtLabel.Text = $@"Found: {imagePaths.Length} images to load to report";
                 // Create a new Word application
                 Application wordApp = new Application();
 
@@ -139,7 +139,7 @@ namespace WindowsFormsApp1
             // Iterate through all sorted image files in the directory
             foreach (string imagePath in imagePaths)
             {
-                folderPathTxtLabel.Text = $@"Extracting image {i}";
+                statusTxtLabel.Text = $@"Extracting image {i}";
 
                 // Get the image name without extension
                 string imageName = Path.GetFileNameWithoutExtension(imagePath);
@@ -172,7 +172,7 @@ namespace WindowsFormsApp1
 
         private void AddTreesTables(Document doc, List<Tree> trees)
         {
-            folderPathTxtLabel.Text = $@"Reads: {trees?.Count ?? 0} trees from excel file";
+            statusTxtLabel.Text = $@"Reads: {trees?.Count ?? 0} trees from excel file";
 
             foreach (var tree in trees)
             {
@@ -193,7 +193,7 @@ namespace WindowsFormsApp1
 
         private void AddThirdTable(Document doc, List<Tree> trees)
         {
-            folderPathTxtLabel.Text = @"Building third table";
+            statusTxtLabel.Text = @"Building third table";
 
             var tableColumns = new List<string>(15)
             {
@@ -244,7 +244,7 @@ namespace WindowsFormsApp1
 
         private void AddSecondTable(Document doc, List<Tree> trees)
         {
-            folderPathTxtLabel.Text = @"Building second table";
+            statusTxtLabel.Text = @"Building second table";
 
             var tableColumns = new List<string>()
             {
@@ -315,7 +315,7 @@ namespace WindowsFormsApp1
 
         private void AddFirstTable(Document doc, List<Tree> trees)
         {
-            folderPathTxtLabel.Text = @"Building first table";
+            statusTxtLabel.Text = @"Building first table";
 
             var tableColumns = new List<string>(15)
             {
@@ -433,7 +433,6 @@ namespace WindowsFormsApp1
         private string[] ValidateAndExtractImageFiles(string directoryPath)
         {
             // Get all image files in the directory and sort them by name
-
             string[] imagePaths = Directory.GetFiles(directoryPath, "*.jpg", SearchOption.AllDirectories)
                 .Concat(Directory.GetFiles(directoryPath, "*.jpeg", SearchOption.AllDirectories))
                 .Concat(Directory.GetFiles(directoryPath, "*.png", SearchOption.AllDirectories))
@@ -457,22 +456,83 @@ namespace WindowsFormsApp1
             return imagePaths.OrderBy(f => int.Parse(Path.GetFileNameWithoutExtension(f))).ToArray();
         }
 
+        private void browseImgFolder_Click(object sender, EventArgs e)
+        {
+            using (var fbd = new FolderBrowserDialog())
+            {
+                DialogResult result = fbd.ShowDialog();
 
-        private void txtDirectoryPath_TextChanged(object sender, EventArgs e)
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    string[] imagePaths = Directory.GetFiles(fbd.SelectedPath, "*.jpg", SearchOption.AllDirectories)
+                        .Concat(Directory.GetFiles(fbd.SelectedPath, "*.jpeg", SearchOption.AllDirectories))
+                        .Concat(Directory.GetFiles(fbd.SelectedPath, "*.png", SearchOption.AllDirectories))
+                        .ToArray();
+
+                    txtDirectoryPath.Text = fbd.SelectedPath;
+                    statusTxtLabel.Text = $@"Found {imagePaths.Length} images in folder";
+                }
+            }
+        }
+
+        private void selectExcelFile_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog1 = new OpenFileDialog
+            {
+                InitialDirectory = @"C:\",
+                Title = "Select excel file",
+
+                CheckFileExists = true,
+                CheckPathExists = true,
+
+                DefaultExt = "txt",
+                Filter = "Excel Files|*.xls;*.xlsx;*.xlsm",
+                
+                FilterIndex = 2,
+                RestoreDirectory = true,
+
+                ReadOnlyChecked = false,
+                ShowReadOnly = true
+            };
+
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                excelFilePahTextBox.Text = openFileDialog1.FileName;
+            }
+        }
+
+        private void templateBrowser_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog1 = new OpenFileDialog
+            {
+                InitialDirectory = @"C:\",
+                Title = "Select Template File",
+
+                CheckFileExists = true,
+                CheckPathExists = true,
+
+                DefaultExt = "docs",
+                Filter = "Word File (.docx ,.doc)|*.docx;",
+
+                FilterIndex = 2,
+                RestoreDirectory = true,
+
+                ReadOnlyChecked = false,
+                ShowReadOnly = true
+            };
+
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                templatePathTextBox.Text = openFileDialog1.FileName;
+            }
+        }
+
+        private void ReportGeneratorForm_Load(object sender, EventArgs e)
         {
 
         }
 
-        private void label1_Click(object sender, EventArgs e)
-        {
-        }
-
-        private void reportNameLabel_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label1_Click_1(object sender, EventArgs e)
+        private void statusStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
 
         }
