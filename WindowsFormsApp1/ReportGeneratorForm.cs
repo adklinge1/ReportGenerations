@@ -536,5 +536,15 @@ namespace WindowsFormsApp1
         {
 
         }
+
+        private void reportNameLabel_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void reportNameTextBox_TextChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }
