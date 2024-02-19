@@ -102,14 +102,17 @@ namespace WindowsFormsApp1
                     MessageBox.Show($@"The number of trees in the excel ({trees.Count}) does not match the numbers of images in folder ({imagePaths.Length})", @"Inconsistent number of trees", MessageBoxButtons.OKCancel | MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
 
-                AddTreesTables(doc, trees);
-
                 // Insert an empty paragraph for spacing
-                Paragraph spacingParagraph = doc.Paragraphs.Add();
-                spacingParagraph.Range.InsertParagraphBefore();
+                doc.Paragraphs.Add().Range.InsertParagraphBefore();
 
                 ExtractAllImagesIntoDoc(imagePaths, doc);
-                
+
+                // Insert an empty paragraph for spacing
+                doc.Paragraphs.Add().Range.InsertParagraphBefore();
+
+                AddTreesTables(doc, trees);
+
+
                 doc.SaveAs2(outputReportPath);
 
                 // Close Word application
