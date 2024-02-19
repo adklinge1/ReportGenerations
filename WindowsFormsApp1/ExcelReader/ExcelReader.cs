@@ -45,14 +45,7 @@ namespace WindowsFormsApp1.ExcelReader
                         break;
                     }
 
-                    Tree tree = ConvertRowToTree(r, sharedStringTable);
-
-                     if (tressSpecies.TryGetValue(tree.Species, out TreeSpecie spicie))
-                     {
-                         tree.ScientificName = spicie.ScientificName;
-                         tree.SpeciesRate = spicie.SpeciesRate;
-                     }
-
+                    Tree tree = ConvertRowToTree(r, sharedStringTable, tressSpecies);
                     trees.Add(tree);
                 }
 
@@ -85,8 +78,8 @@ namespace WindowsFormsApp1.ExcelReader
             return treeNameToScientificNameAndValueDic;
         }
 
-        private static Tree ConvertRowToTree(Row row, SharedStringTable sharedString)
-    {
+        private static Tree ConvertRowToTree(Row row, SharedStringTable sharedString, Dictionary<string, TreeSpecie> treesSpecies)
+        {
         int index = -1;
         string species = string.Empty;
         double height = -1.0;
@@ -94,7 +87,7 @@ namespace WindowsFormsApp1.ExcelReader
         double canopy = -1.0;
         int health = -1;
         int location = -1;
-        int speciesValue = -1;
+        int speciesRate = -1;
         double price = -1;
         string scientificName = "Unknown";
         int numberOfStems = 1;
@@ -140,7 +133,7 @@ namespace WindowsFormsApp1.ExcelReader
                         break;
 
                     case "H":
-                        speciesValue = int.Parse(cellValue);
+                        speciesRate = int.Parse(cellValue);
                         break;
 
                     case "I":
@@ -160,7 +153,6 @@ namespace WindowsFormsApp1.ExcelReader
 
                     default:
                         throw new ArgumentException($"Excel table shoudn't have a cell at column : {columneName}");
-                        break;
                     }
             }
             catch (Exception ex)
@@ -169,7 +161,14 @@ namespace WindowsFormsApp1.ExcelReader
             }
         }
 
-        return  new Tree(index, species, height, diameter, health, canopy, location, speciesValue, price, scientificName, numberOfStems, isTserifi)
+        // Infer species scientific name and value from internal map
+        if (treesSpecies.TryGetValue(species, out TreeSpecie spicie))
+        {
+            scientificName = spicie.ScientificName;
+            speciesRate = spicie.SpeciesRate;
+        }
+
+        return new Tree(index, species, height, diameter, health, canopy, location, speciesRate, price, scientificName, numberOfStems, isTserifi)
         {
             Comments = comment
         };

@@ -103,7 +103,6 @@ namespace WindowsFormsApp1
                 }
 
                 // Insert an empty paragraph for spacing
-                Paragraph spacingParagraph = doc.Paragraphs.Add();
                 doc.Paragraphs.Add().Range.InsertParagraphBefore();
 
                 ExtractAllImagesIntoDoc(imagePaths, doc);
