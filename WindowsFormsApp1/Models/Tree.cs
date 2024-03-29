@@ -56,6 +56,7 @@ namespace WindowsFormsApp1.Models
         public int Quatity => 1;
 
         public string Species { get; set; }
+
         public string ScientificName { get; set; }
 
         public double Height { get; set; }
