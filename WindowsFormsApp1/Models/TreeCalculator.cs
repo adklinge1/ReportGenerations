@@ -12,10 +12,12 @@ namespace WindowsFormsApp1.Models
     public class TreeCalculator
     {
         private Dictionary<string, double> _treeTypeToPriceFactor;
+        private Dictionary<string, double> _palmTypeToPriceFactor;
 
         public async Task LoadTreePricesAsync()
         {
             _treeTypeToPriceFactor = _treeTypeToPriceFactor ?? await FetchTreePricesAsync();
+            _palmTypeToPriceFactor = ExcelReader.ExcelReader.TryReadPalmSpecies().ToDictionary(kcp => kcp.Key, kvp => kvp.Value.SpeciesRate);
         }
 
         public double? TryToGetTreePrice(Tree tree)
@@ -24,7 +26,13 @@ namespace WindowsFormsApp1.Models
             {
                 return null;
             }
-            if (_treeTypeToPriceFactor?.ContainsKey(tree.Species.Trim())!= true)
+
+            if (IsPalmTree(tree))
+            {
+                return CalculatePalmTreeValue(tree);
+            }
+
+            if (_treeTypeToPriceFactor?.ContainsKey(tree.Species.Trim()) != true)
             {
                 return null;
             }
@@ -46,7 +54,7 @@ namespace WindowsFormsApp1.Models
 
         private double CalculateTreeValue(Tree tree)
         {
-            var treeSize = CalculateTreeSize(tree);
+            double treeSize = CalculateTreeSize(tree);
             double treeFactor = _treeTypeToPriceFactor[tree.Species.Trim()];
 
             if (tree.LocationRate > 0 && tree.HealthRate > 0 && treeSize > 0)
@@ -61,6 +69,21 @@ namespace WindowsFormsApp1.Models
 
             // Return a default value or handle the case when inputs are not valid
             return 0.0;
+        }
+
+        private double CalculatePalmTreeValue(Tree tree)
+        {
+            // In the agriculture department the tree health and location are numbers between [0-1]
+            double healthNormalized = (double)tree.HealthRate / 5;
+            double locationNormalized = (double)tree.LocationRate / 5;
+            double palmValue = _palmTypeToPriceFactor[tree.Species];
+            
+            return 1500 * palmValue * tree.Height * healthNormalized * locationNormalized;
+        }
+
+        private bool IsPalmTree(Tree tree)
+        {
+            return _palmTypeToPriceFactor?.ContainsKey(tree.Species) == true;
         }
 
 

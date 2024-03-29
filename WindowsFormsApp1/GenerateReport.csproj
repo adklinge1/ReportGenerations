@@ -88,6 +88,7 @@
     <Compile Include="Models\Tree.cs" />
     <Compile Include="Models\TreeCalculator.cs" />
     <Compile Include="Models\TreeEvaluation.cs" />
+    <Compile Include="Models\PalmSpecie.cs" />
     <Compile Include="Models\TreeSpecie.cs" />
     <Compile Include="ReportGeneratorForm.cs">
       <SubType>Form</SubType>
@@ -109,6 +110,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="ExcelReader\PalmSpeciesToScientificNameAndRate.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="ExcelReader\TreeSpeciesToScientificNameAndRate.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

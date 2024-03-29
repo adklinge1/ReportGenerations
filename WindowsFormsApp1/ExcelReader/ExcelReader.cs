@@ -53,7 +53,7 @@ namespace WindowsFormsApp1.ExcelReader
             }
         }
 
-        private static Dictionary<string, TreeSpecie> TryReadTreeSpecies(string path = @"ExcelReader\TreeSpeciesToScientificNameAndRate.csv")
+        public static Dictionary<string, TreeSpecie> TryReadTreeSpecies(string path = @"ExcelReader\TreeSpeciesToScientificNameAndRate.csv")
         {
             Dictionary<string, TreeSpecie> treeNameToScientificNameAndValueDic = new Dictionary<string, TreeSpecie>();
 
@@ -64,6 +64,31 @@ namespace WindowsFormsApp1.ExcelReader
                 {
                     IEnumerable<TreeSpecie> records = csv.GetRecords<TreeSpecie>();
                     foreach (TreeSpecie record in records)
+                    {
+                        treeNameToScientificNameAndValueDic[record.HebrewName] = record;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+
+            return treeNameToScientificNameAndValueDic;
+        }
+
+        public static Dictionary<string, PalmSpecie> TryReadPalmSpecies(string path = @"ExcelReader\PalmSpeciesToScientificNameAndRate.csv")
+        {
+            Dictionary<string, PalmSpecie> treeNameToScientificNameAndValueDic = new Dictionary<string, PalmSpecie>();
+
+            try
+            {
+                using (var reader = new StreamReader(path))
+                using (var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)))
+                {
+                    IEnumerable<PalmSpecie> records = csv.GetRecords<PalmSpecie>();
+                    foreach (PalmSpecie record in records)
                     {
                         treeNameToScientificNameAndValueDic[record.HebrewName] = record;
                     }
