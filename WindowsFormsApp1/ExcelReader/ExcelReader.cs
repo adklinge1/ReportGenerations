@@ -187,18 +187,40 @@ namespace WindowsFormsApp1.ExcelReader
         }
 
         // Infer species scientific name and value from internal map
-        if (treesSpecies.TryGetValue(species, out TreeSpecie spicie))
+        if (TryGetSpecies(treesSpecies, species, out var spicie))
         {
             scientificName = spicie.ScientificName;
             speciesRate = spicie.SpeciesRate;
         }
 
-        return new Tree(index, species, height, diameter, health, canopy, location, speciesRate, price, scientificName, numberOfStems, isTserifi)
+        return new Tree(index, spicie.HebrewName, height, diameter, health, canopy, location, speciesRate, price, scientificName, numberOfStems, isTserifi)
         {
             Comments = comment
         };
     }
 
+        private static bool TryGetSpecies(Dictionary<string, TreeSpecie> treesSpecies, string inputSpecies, out TreeSpecie inferredSpecies)
+        {
+            // Try fetch the value as-is
+            if (treesSpecies.TryGetValue(inputSpecies, out inferredSpecies))
+            {
+                return true;
+            }
+
+            // Clean value from spaces and "-"
+            string cleanedInputValue = inputSpecies.Trim().Replace("-", "").Replace(" ", "");
+
+            string rightKey = treesSpecies.Keys.FirstOrDefault(key => key.Trim().Replace("-", "").Replace(" ", "") == cleanedInputValue);
+
+            if (string.IsNullOrWhiteSpace(rightKey))
+            {
+                return false;
+            }
+
+            inferredSpecies = treesSpecies[rightKey];
+
+            return true;
+        }
 
         public static string GetColumnName(string cellReference)
         {
