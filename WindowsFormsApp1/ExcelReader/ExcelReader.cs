@@ -193,7 +193,7 @@ namespace WindowsFormsApp1.ExcelReader
             speciesRate = spicie.SpeciesRate;
         }
 
-        return new Tree(index, spicie.HebrewName, height, diameter, health, canopy, location, speciesRate, price, scientificName, numberOfStems, isTserifi)
+        return new Tree(index, spicie?.HebrewName ?? species, height, diameter, health, canopy, location, speciesRate, price, scientificName, numberOfStems, isTserifi)
         {
             Comments = comment
         };
