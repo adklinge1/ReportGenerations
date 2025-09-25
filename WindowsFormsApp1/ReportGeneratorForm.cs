@@ -15,10 +15,10 @@ namespace WindowsFormsApp1
     {
         private readonly TreeCalculator _treeCalculator;
 
-        public ReportGeneratorForm(TreeCalculator treeCalculator)
+        public ReportGeneratorForm()
         {
             InitializeComponent();
-            _treeCalculator = treeCalculator;
+            _treeCalculator = new TreeCalculator();
 
             // Initialize the controls
             statusStrip1 = new StatusStrip();
@@ -29,17 +29,26 @@ namespace WindowsFormsApp1
             statusStrip1.Items.Add(toolStripStatusLabel1);
 
             // Configure ToolStripStatusLabel
-            toolStripStatusLabel1.Text = @"© 2023 Created with ♥ for Yarden The Agronomist. All rights reserved."; ;
+            toolStripStatusLabel1.Text = @"© 2025 Created with ♥ for Yarden The Agronomist. All rights reserved."; ;
         }
 
-        private void btnGenerateDocument_Click(object sender, EventArgs e)
+        private async void btnGenerateDocument_Click(object sender, EventArgs e)
         {
+            // Make sure the method is async
+
             string directoryPath = txtDirectoryPath.Text?.TrimEnd('"')?.TrimStart('"');
             string templatePath = templatePathTextBox.Text?.TrimEnd('"')?.TrimStart('"');
             string reportName = reportNameTextBox.Text;
             string excelFilePath = excelFilePahTextBox.Text?.TrimEnd('"')?.TrimStart('"'); 
 
-            // Save the document inside the provided directoryPath with the name "GeneratedDocument.docx"
+            // Validate report name
+            if (string.IsNullOrWhiteSpace(reportName))
+            {
+                MessageBox.Show("Please enter a valid report name.", "Missing Report Name", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Save the document inside the provided directoryPath
             string outputReportPath = Path.Combine(directoryPath, $"{reportName}.docx");
 
             // Check if the document exists/ open, and pop en error message
@@ -73,12 +82,16 @@ namespace WindowsFormsApp1
             // Check if excel file exists
             if (!File.Exists(excelFilePath))
             {
-                MessageBox.Show(@"There is no such excel file", "Excel file doesn't already exists", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                MessageBox.Show(@"The specified Excel file does not exist.", "Excel File Missing", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
                 return;
             }
 
             try
             {
+                // Load tree prices before processing the report
+                statusTxtLabel.Text = "Loading tree prices...";
+                await _treeCalculator.LoadTreePricesAsync();
+
                 // Get all image files in the directory and sort them by name
                 string[] imagePaths = ValidateAndExtractImageFiles(directoryPath);
 

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -131,18 +132,45 @@ namespace WindowsFormsApp1.Models
 
         static async Task<string> DownloadHtmlAsync(string url)
         {
-            using (HttpClient httpClient = new HttpClient())
+            // Explicitly set TLS 1.2
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+            using (HttpClientHandler handler = new HttpClientHandler { 
+                AllowAutoRedirect = true,
+                UseDefaultCredentials = false,
+                AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate
+            })
+            using (HttpClient httpClient = new HttpClient(handler))
             {
-                httpClient.Timeout = TimeSpan.FromSeconds(5);
-
-                // Download the HTML content
-                HttpResponseMessage response = await httpClient.GetAsync(url);
-
-                // Check if the request was successful
-                response.EnsureSuccessStatusCode();
-
-                // Read and return the HTML content as a string
-                return await response.Content.ReadAsStringAsync();
+                httpClient.Timeout = TimeSpan.FromSeconds(60); // Increase timeout further
+                httpClient.DefaultRequestHeaders.Clear();
+                httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36");
+                httpClient.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8");
+                httpClient.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.9,he;q=0.8");
+                httpClient.DefaultRequestHeaders.Add("Cache-Control", "no-cache");
+                
+                Console.WriteLine($"Attempting to download HTML from {url}...");
+                
+                try {
+                    // Download the HTML content
+                    HttpResponseMessage response = await httpClient.GetAsync(url);
+                    
+                    // Check if the request was successful
+                    response.EnsureSuccessStatusCode();
+                    
+                    Console.WriteLine("Successfully received response");
+                    
+                    // Read and return the HTML content as a string
+                    return await response.Content.ReadAsStringAsync();
+                }
+                catch (TaskCanceledException ex) {
+                    Console.WriteLine($"Task cancelled: {ex.Message}. Inner exception: {ex.InnerException?.Message}");
+                    throw;
+                }
+                catch (Exception ex) {
+                    Console.WriteLine($"Error downloading HTML: {ex.GetType().Name} - {ex.Message}");
+                    throw;
+                }
             }
         }
 
