@@ -1,0 +1,96 @@
+name: Build and Release ReportGenerator
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET Framework
+      uses: microsoft/setup-msbuild@v2
+      
+    - name: Setup NuGet
+      uses: nuget/setup-nuget@v2
+      
+    - name: Restore NuGet packages
+      run: nuget restore WindowsFormsApp1/GenerateReport.csproj -PackagesDirectory packages
+      
+    - name: Build Release
+      run: msbuild WindowsFormsApp1/GenerateReport.csproj /p:Configuration=Release /p:Platform="Any CPU" /p:OutputPath="../build/Release/"
+      
+    - name: Copy dependencies and data files
+      run: |
+        # Create release directory
+        New-Item -ItemType Directory -Force -Path "release"
+        
+        # Copy main executable and dependencies
+        Copy-Item "build/Release/*" -Destination "release/" -Recurse -Force
+        
+        # Ensure data files are copied
+        Copy-Item "WindowsFormsApp1/ExcelReader/*.csv" -Destination "release/" -Force -ErrorAction SilentlyContinue
+        Copy-Item "WindowsFormsApp1/TreeCalculator/*.html" -Destination "release/" -Force -ErrorAction SilentlyContinue
+        Copy-Item "WindowsFormsApp1/ExcelTemplate.xlsx" -Destination "release/" -Force -ErrorAction SilentlyContinue
+        
+        # List contents for debugging
+        Write-Host "Release directory contents:"
+        Get-ChildItem -Path "release/" -Recurse
+      shell: powershell
+      
+    - name: Create release package
+      run: |
+        $version = if ($env:GITHUB_REF -match "refs/tags/(.*)") { $matches[1] } else { "${{ github.event.inputs.version }}" }
+        $packageName = "ReportGenerator-$version-win-x64.zip"
+        Compress-Archive -Path "release/*" -DestinationPath $packageName
+        Write-Host "Created package: $packageName"
+        echo "PACKAGE_NAME=$packageName" >> $env:GITHUB_ENV
+      shell: powershell
+      
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: ${{ env.PACKAGE_NAME }}
+        generate_release_notes: true
+        draft: false
+        prerelease: false
+        name: "ReportGenerator ${{ github.ref_name }}"
+        body: |
+          ## ReportGenerator ${{ github.ref_name }}
+          
+          ### 📦 Download
+          Download the `ReportGenerator-${{ github.ref_name }}-win-x64.zip` file below.
+          
+          ### 🚀 Installation
+          1. Download the zip file
+          2. Extract to any folder
+          3. Run `ReportGenerator.exe`
+          
+          ### 📋 Requirements
+          - Windows 7 SP1 or later
+          - .NET Framework 4.7.2 (usually pre-installed on Windows 10/11)
+          
+          ### 📝 Changes
+          See the auto-generated release notes below for detailed changes.
+          
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Upload package artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ReportGenerator-Release
+        path: ${{ env.PACKAGE_NAME }}
+        retention-days: 90
