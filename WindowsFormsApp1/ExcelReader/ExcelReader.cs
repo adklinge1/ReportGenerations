@@ -9,7 +9,7 @@ using CsvHelper.Configuration;
 using System.Globalization;
 using System.IO;
 
-namespace WindowsFormsApp1.ExcelReader 
+namespace WindowsFormsApp1.ExcelReader
 {
     public static class ExcelReader
     {
@@ -32,7 +32,7 @@ namespace WindowsFormsApp1.ExcelReader
 
                 if (numberOfTrees <= 0)
                 {
-                        return new List<Tree>(numberOfTrees);
+                    return new List<Tree>(numberOfTrees);
                 }
 
                 List<Tree> trees = new List<Tree>(numberOfTrees);
@@ -105,99 +105,102 @@ namespace WindowsFormsApp1.ExcelReader
 
         private static Tree ConvertRowToTree(Row row, SharedStringTable sharedString, Dictionary<string, TreeSpecie> treesSpecies)
         {
-        int index = -1;
-        string species = string.Empty;
-        double height = -1.0;
-        double diameter = -1.0;
-        double canopy = -1.0;
-        int health = -1;
-        int location = -1;
-        int speciesRate = -1;
-        double price = -1;
-        string scientificName = "Unknown";
-        int numberOfStems = 1;
-        bool isTserifi = false;
-        string comment = String.Empty;
-            
-        foreach (Cell cell in row.Elements<Cell>())
-        {
-            string cellValue = GetCellValue(cell, sharedString).Trim();
+            int index = -1;
+            string species = string.Empty;
+            double height = -1.0;
+            double diameter = -1.0;
+            double canopy = -1.0;
+            int health = -1;
+            int location = -1;
+            int speciesRate = -1;
+            double price = -1;
+            string scientificName = "Unknown";
+            int numberOfStems = 1;
+            bool isTserifi = false;
+            string comment = String.Empty;
+            string hebrewName = String.Empty;
 
-            if (string.IsNullOrWhiteSpace(cellValue))
+
+            foreach (Cell cell in row.Elements<Cell>())
             {
-                continue;
-            }
+                string cellValue = GetCellValue(cell, sharedString).Trim();
 
-            var columneName = GetColumnName(cell.CellReference.Value);
-
-            try
-            {
-                switch (columneName)
+                if (string.IsNullOrWhiteSpace(cellValue))
                 {
-                    case "A":
-                        index = int.Parse(cellValue);
-                        break;
-                    case "B":
-                        species = cellValue;
-                        break;
-                    case "C":
-                        height = double.Parse(cellValue);
-                        break;
-                    case "D":
-                        diameter = double.Parse(cellValue);
-                        break;
-                    case "E":
-                        canopy = double.Parse(cellValue);
-                        break;
-                    case "F":
-                        health = int.Parse(cellValue);
-                        break;
+                    continue;
+                }
 
-                    case "G":
-                        location = int.Parse(cellValue);
-                        break;
+                var columneName = GetColumnName(cell.CellReference.Value);
 
-                    case "H":
-                        speciesRate = int.Parse(cellValue);
-                        break;
+                try
+                {
+                    switch (columneName)
+                    {
+                        case "A":
+                            index = int.Parse(cellValue);
+                            break;
+                        case "B":
+                            species = cellValue;
+                            break;
+                        case "C":
+                            height = double.Parse(cellValue);
+                            break;
+                        case "D":
+                            diameter = double.Parse(cellValue);
+                            break;
+                        case "E":
+                            canopy = double.Parse(cellValue);
+                            break;
+                        case "F":
+                            health = int.Parse(cellValue);
+                            break;
 
-                    case "I":
-                        scientificName = cellValue;
-                        break;
+                        case "G":
+                            location = int.Parse(cellValue);
+                            break;
 
-                    case "J":
-                        comment = cellValue;
-                        break;
+                        case "H":
+                            speciesRate = int.Parse(cellValue);
+                            break;
 
-                    case "K":
-                        numberOfStems = !string.IsNullOrWhiteSpace(cellValue) && int.TryParse(cellValue, out int numOfStems) ? numOfStems : 1;
-                        break;
-                    case "L":
-                        isTserifi = !string.IsNullOrWhiteSpace(cellValue) && int.TryParse(cellValue, out int tserifi) && tserifi == 1;
-                        break;
+                        case "I":
+                            scientificName = cellValue;
+                            break;
 
-                    default:
-                        throw new ArgumentException($"Excel table shoudn't have a cell at column : {columneName}");
+                        case "J":
+                            comment = cellValue;
+                            break;
+
+                        case "K":
+                            numberOfStems = !string.IsNullOrWhiteSpace(cellValue) && int.TryParse(cellValue, out int numOfStems) ? numOfStems : 1;
+                            break;
+                        case "L":
+                            isTserifi = !string.IsNullOrWhiteSpace(cellValue) && int.TryParse(cellValue, out int tserifi) && tserifi == 1;
+                            break;
+
+                        default:
+                            throw new ArgumentException($"Excel table shoudn't have a cell at column : {columneName}");
                     }
+                }
+                catch (Exception ex)
+                {
+                    throw new ArgumentException($"Column :{columneName} in row {row.RowIndex} can not be: {cellValue}\n{ex}");
+                }
             }
-            catch (Exception ex)
+
+            // Infer species scientific name and value from internal map
+            if (TryGetSpecies(treesSpecies, species, out var spicie))
             {
-                throw new ArgumentException($"Column :{columneName} in row {row.RowIndex} can not be: {cellValue}\n{ex}");
+                scientificName = spicie.ScientificName;
+                speciesRate = spicie.SpeciesRate;
+                hebrewName = spicie.HebrewName;
             }
-        }
 
-        // Infer species scientific name and value from internal map
-        if (TryGetSpecies(treesSpecies, species, out var spicie))
-        {
-            scientificName = spicie.ScientificName;
-            speciesRate = spicie.SpeciesRate;
+            return new Tree(index, hebrewName, height, diameter, health, canopy, location, speciesRate, price, scientificName, numberOfStems, isTserifi)
+            {
+                Comments = comment
+            };
         }
-
-        return new Tree(index, spicie.HebrewName, height, diameter, health, canopy, location, speciesRate, price, scientificName, numberOfStems, isTserifi)
-        {
-            Comments = comment
-        };
-    }
 
         private static bool TryGetSpecies(Dictionary<string, TreeSpecie> treesSpecies, string inputSpecies, out TreeSpecie inferredSpecies)
         {
