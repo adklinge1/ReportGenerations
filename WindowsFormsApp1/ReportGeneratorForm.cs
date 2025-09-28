@@ -101,39 +101,46 @@ namespace WindowsFormsApp1
                 }
 
                 statusTxtLabel.Text = $@"Found: {imagePaths.Length} images to load to report";
-                // Create a new Word application
-                Application wordApp = new Application();
-
-                // Create a new document
-                Document doc = string.IsNullOrWhiteSpace(templatePath) ? wordApp.Documents.Add() : wordApp.Documents.Open(templatePath);
-
-                // TODO: add table after images
-                List<Tree> trees = ExcelReader.ExcelReader.ReadExcelFile(excelFilePath);
-
-                if (trees.Count != imagePaths.Length)
+                
+                // Use COM manager for main Word automation objects
+                using (var mainComManager = new ComObjectManager())
                 {
-                    MessageBox.Show($@"The number of trees in the excel ({trees.Count}) does not match the numbers of images in folder ({imagePaths.Length})", @"Inconsistent number of trees", MessageBoxButtons.OKCancel | MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    // Create a new Word application
+                    Application wordApp = mainComManager.Register(new Application());
+
+                    // Create a new document
+                    Document doc = mainComManager.Register(string.IsNullOrWhiteSpace(templatePath) ? 
+                        wordApp.Documents.Add() : wordApp.Documents.Open(templatePath));
+
+                    // TODO: add table after images
+                    List<Tree> trees = ExcelReader.ExcelReader.ReadExcelFile(excelFilePath);
+
+                    if (trees.Count != imagePaths.Length)
+                    {
+                        MessageBox.Show($@"The number of trees in the excel ({trees.Count}) does not match the numbers of images in folder ({imagePaths.Length})", @"Inconsistent number of trees", MessageBoxButtons.OKCancel | MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+
+                    // Insert an empty paragraph for spacing
+                    var spacingParagraph1 = mainComManager.Register(doc.Paragraphs.Add());
+                    var spacingRange1 = mainComManager.Register(spacingParagraph1.Range);
+                    spacingRange1.InsertParagraphBefore();
+
+                    ExtractAllImagesIntoDoc(imagePaths, doc);
+
+                    // Insert an empty paragraph for spacing
+                    var spacingParagraph2 = mainComManager.Register(doc.Paragraphs.Add());
+                    var spacingRange2 = mainComManager.Register(spacingParagraph2.Range);
+                    spacingRange2.InsertParagraphBefore();
+
+                    AddTreesTables(doc, trees);
+
+                    doc.SaveAs2(outputReportPath);
+
+                    // Close Word application
+                    wordApp.Quit();
+
+                    // COM objects automatically released by ComObjectManager
                 }
-
-                // Insert an empty paragraph for spacing
-                doc.Paragraphs.Add().Range.InsertParagraphBefore();
-
-                ExtractAllImagesIntoDoc(imagePaths, doc);
-
-                // Insert an empty paragraph for spacing
-                doc.Paragraphs.Add().Range.InsertParagraphBefore();
-
-                AddTreesTables(doc, trees);
-
-
-                doc.SaveAs2(outputReportPath);
-
-                // Close Word application
-                wordApp.Quit();
-
-                // Release COM objects to avoid memory leaks
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(doc);
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(wordApp);
 
                 // Display the output document
                 System.Diagnostics.Process.Start(outputReportPath);
@@ -148,38 +155,34 @@ namespace WindowsFormsApp1
 
         private void ExtractAllImagesIntoDoc(string[] imagePaths, Document doc)
         {
-            int i = 1;
-            // Iterate through all sorted image files in the directory
-            foreach (string imagePath in imagePaths)
+            using (var comManager = new ComObjectManager())
             {
-                statusTxtLabel.Text = $@"Extracting image {i}";
+                for (int i = 0; i < imagePaths.Length; i++)
+                {
+                    string imagePath = imagePaths[i];
+                    statusTxtLabel.Text = $@"Processing image {i + 1} of {imagePaths.Length}";
 
-                // Get the image name without extension
-                string imageName = Path.GetFileNameWithoutExtension(imagePath);
+                    // Get the image name without extension
+                    string imageName = Path.GetFileNameWithoutExtension(imagePath);
 
-                // Add content to the Word document
-                Paragraph imageNameParagraph = doc.Paragraphs.Add();
-                Range imageNameRange = imageNameParagraph.Range;
-                imageNameRange.Text = imageName; // Set the image name
+                    // Register all COM objects for automatic cleanup
+                    var imageNameParagraph = comManager.Register(doc.Paragraphs.Add());
+                    var imageNameRange = comManager.Register(imageNameParagraph.Range);
+                    imageNameRange.Text = imageName; // Set the image name
 
-                // Add content to the Word document
-                Paragraph paragraph = doc.Paragraphs.Add();
-                Range range = paragraph.Range;
+                    var paragraph = comManager.Register(doc.Paragraphs.Add());
+                    var range = comManager.Register(paragraph.Range);
 
-                // Load the image file and add it to the Word document
-                InlineShape inlineShape = doc.InlineShapes.AddPicture(imagePath, Range: range);
+                    // Load the image file and add it to the Word document
+                    var inlineShape = comManager.Register(doc.InlineShapes.AddPicture(imagePath, Range: range));
 
-                // Optionally, adjust the size of the image
-                inlineShape.LockAspectRatio = MsoTriState.msoFalse;
-                inlineShape.Width = 300; // Set the width as needed
-                inlineShape.Height = 200; // Set the height as needed
+                    // Optionally, adjust the size of the image
+                    inlineShape.LockAspectRatio = MsoTriState.msoFalse;
+                    inlineShape.Width = 300; // Set the width as needed
+                    inlineShape.Height = 200; // Set the height as needed
 
-                // Release COM objects to avoid memory leaks
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(inlineShape);
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(range);
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(paragraph);
-
-                i++;
+                    // COM objects automatically released when exiting using block
+                }
             }
         }
 
